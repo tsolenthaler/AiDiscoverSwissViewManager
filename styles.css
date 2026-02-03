@@ -256,6 +256,8 @@ button.danger {
   padding: 16px;
   border-radius: 12px;
   overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
   min-height: 180px;
   font-size: 0.85rem;
 }
