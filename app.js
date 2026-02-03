@@ -222,10 +222,7 @@ function renderFilters() {
       <div class="grid-2">
         <label>
           <span>Filter type</span>
-          <select data-field="type">
-            <option value="combinedTypeTree" ${filter.type === "combinedTypeTree" ? "selected" : ""}>Typenbaum (combinedTypeTree)</option>
-            <option value="categoryTree" ${filter.type === "categoryTree" ? "selected" : ""}>Kategorienbaum (categoryTree)</option>
-          </select>
+          <input data-field="type" value="${filter.type || ""}" placeholder="combinedTypeTree" />
         </label>
         <label class="full">
           <span>Filter values (one per line)</span>
