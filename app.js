@@ -154,6 +154,7 @@ function renderViews() {
       state.selectedViewId = view.id;
       renderViews();
       updateButtonStates();
+      loadSelectedView();
     });
     elements.viewsList.appendChild(item);
   });
