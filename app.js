@@ -812,6 +812,17 @@ function init() {
   renderSettings();
   renderDraft();
   wireEvents();
+
+  document.querySelectorAll("details.panel").forEach((panel) => {
+    panel.addEventListener("toggle", () => {
+      if (!panel.open) return;
+      document.querySelectorAll("details.panel").forEach((other) => {
+        if (other !== panel) {
+          other.open = false;
+        }
+      });
+    });
+  });
 }
 
 init();
