@@ -205,6 +205,36 @@ button:disabled {
   border-top: 1px solid var(--border);
 }
 
+/* Sub-details for nested sections */
+.sub-details {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 12px 0;
+  cursor: pointer;
+}
+
+.sub-details summary {
+  font-weight: 500;
+  color: var(--text);
+  user-select: none;
+  padding: 4px 0;
+  transition: color 0.2s;
+  display: list-item;
+}
+
+.sub-details summary:hover {
+  color: var(--primary);
+}
+
+.sub-details[open] summary {
+  margin-bottom: 12px;
+}
+
+.sub-details .code-block {
+  margin: 0;
+}
+
 button.secondary {
   background: #e0e7ff;
   color: #1e3a8a;

@@ -22,6 +22,7 @@ const state = {
     request: {},
     response: {},
     results: {},
+    openaiRequest: {},
   },
   chat: {
     messages: [],
@@ -52,7 +53,9 @@ const elements = {
   updateViewBtn: document.getElementById("updateViewBtn"),
   previewResultsBtn: document.getElementById("previewResultsBtn"),
   copyRequestBtn: document.getElementById("copyRequestBtn"),
+  copyOpenaiRequestBtn: document.getElementById("copyOpenaiRequestBtn"),
   requestJson: document.getElementById("requestJson"),
+  openaiRequestJson: document.getElementById("openaiRequestJson"),
   responseJson: document.getElementById("responseJson"),
   resultsJson: document.getElementById("resultsJson"),
   copyResponseBtn: document.getElementById("copyResponseBtn"),
@@ -533,6 +536,11 @@ function updateRequestJson() {
   const requestBody = buildRequestBody();
   state.responses.request = requestBody;
   elements.requestJson.textContent = JSON.stringify(requestBody, null, 2);
+  
+  // Update OpenAI request display if available
+  if (state.responses.openaiRequest && Object.keys(state.responses.openaiRequest).length > 0) {
+    elements.openaiRequestJson.textContent = JSON.stringify(state.responses.openaiRequest, null, 2);
+  }
 }
 
 function setResponseJson(target, data) {
@@ -730,7 +738,72 @@ async function sendChatMessage(message) {
     updateSettingsStatus("Please save OpenAI API key first.", true);
     return;
   }
-  const systemPrompt = `You are AIViewManager, a helpful assistant that guides users to create or edit discover.swiss SearchViewRequest JSON.\n\nRules:\n- Ask clarifying questions if required.\n- Provide suggestions for scheduleStrategy and filters.\n- If the user asks to update the draft, respond with a JSON object for SearchViewRequest.\n- Use combinedTypeTree or categoryTree only.\n- For facets named categoryTree or combinedTypeTree, set excludeRedundant to true.\n- Keep response concise.`;
+  const systemPrompt = `You are AIViewManager, a helpful assistant for creating and editing discover.swiss SearchViewRequest configurations.
+
+Your role:
+- Guide users through building views for searching tourism/hospitality data
+- Provide suggestions based on discover.swiss API capabilities
+- Generate valid JSON when requested
+- Help optimize search strategies
+
+discover.swiss API Documentation:
+- Environments: Test (api.discover.swiss/test/info/v2), Production (api.discover.swiss/info/v2)
+- Main endpoint: /search/views for CRUD operations on views
+
+SearchViewRequest Structure:
+{
+  "name": "string",
+  "description": "string", 
+  "scheduleStrategy": "EveryHour | Every6Hours | Every12Hours | Daily | Weekly",
+  "searchRequest": {
+    "project": ["project-name"],
+    "combinedTypeTree": ["Thing|Place|LocalBusiness"],  // OR use categoryTree
+    "categoryTree": ["category-name"],                   // Use ONE of combinedTypeTree OR categoryTree
+    "facets": [
+      {
+        "name": "facet-name",
+        "responseName": "displayName",
+        "responseNames": { "de": "Anzeigename", "en": "Display Name" },
+        "filterValues": ["value1", "value2"],
+        "additionalType": ["type1"],
+        "orderBy": "field",
+        "orderDirection": "asc | desc",
+        "count": 10,
+        "excludeRedundant": true  // Set for categoryTree/combinedTypeTree facets
+      }
+    ]
+  }
+}
+
+Filter Types:
+- combinedTypeTree: Schema.org combined type hierarchy
+- categoryTree: Tourism category hierarchy
+- filters, award, campaignTag, allTag, category, amenityFeature, starRatingName, addressLocality, addressPostalCode
+
+Facet Names (common):
+- categoryTree: Tourism categories (hotels, restaurants, attractions, etc.)
+- combinedTypeTree: Schema.org types (LocalBusiness, Restaurant, etc.)
+- amenityFeature: Accommodation amenities (WiFi, pool, gym, etc.)
+- starRatingName: Star ratings
+- addressLocality: Geographic locations
+- award, campaignTag: Special promotions/awards
+
+Best Practices:
+- Use facets to enable filtering in search results
+- Set responseNames for multi-language support
+- Use excludeRedundant=true for tree-based facets to avoid duplicate entries
+- orderBy and orderDirection help present facets in logical order
+- count limits the number of returned facet values
+
+When creating views:
+1. Ask about data scope (accommodations, restaurants, attractions, etc.)
+2. Determine needed facets for filtering
+3. Suggest appropriate schedule strategy
+4. Provide complete JSON structure
+5. Guide on filters and facet configuration
+
+Respond in JSON when user asks "create", "generate", or "suggest" a view.
+Keep technical details concise but complete.`;
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -742,17 +815,22 @@ async function sendChatMessage(message) {
   renderChat();
 
   try {
+    const requestBody = {
+      model: state.settings.openaiModel || "gpt-4o-mini",
+      messages,
+      temperature: 0.4,
+    };
+    
+    // Store the OpenAI request for inspection
+    state.responses.openaiRequest = requestBody;
+    
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${state.settings.openaiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: state.settings.openaiModel || "gpt-4o-mini",
-        messages,
-        temperature: 0.4,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     const data = await response.json();
@@ -874,6 +952,9 @@ function wireEvents() {
 
   elements.copyRequestBtn.addEventListener("click", () =>
     copyToClipboard(elements.requestJson.textContent)
+  );
+  elements.copyOpenaiRequestBtn.addEventListener("click", () =>
+    copyToClipboard(elements.openaiRequestJson.textContent)
   );
   elements.copyResponseBtn.addEventListener("click", () =>
     copyToClipboard(elements.responseJson.textContent)
