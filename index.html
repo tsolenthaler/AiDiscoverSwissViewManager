@@ -71,6 +71,7 @@
           <button class="tab active" data-tab="draft">Draft editor</button>
           <button class="tab" data-tab="response">Responses</button>
           <button class="tab" data-tab="chat">Chatbot</button>
+          <button class="tab" data-tab="results">Search results</button>
         </div>
 
         <div id="tab-draft" class="tab-content active">
@@ -132,17 +133,18 @@
           </div>
         </div>
 
+        <div id="tab-results" class="tab-content">
+          <div>
+            <div class="section-title">Search results</div>
+            <pre id="resultsJson" class="code-block"></pre>
+          </div>
+        </div>
+
         <div id="tab-response" class="tab-content">
-          <div class="grid-2">
-            <div>
-              <div class="section-title">API response</div>
-              <button id="copyResponseBtn" class="ghost">Copy response JSON</button>
-              <pre id="responseJson" class="code-block"></pre>
-            </div>
-            <div>
-              <div class="section-title">Search results</div>
-              <pre id="resultsJson" class="code-block"></pre>
-            </div>
+          <div>
+            <div class="section-title">API response</div>
+            <button id="copyResponseBtn" class="ghost">Copy response JSON</button>
+            <pre id="responseJson" class="code-block"></pre>
           </div>
         </div>
       </section>
