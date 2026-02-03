@@ -109,9 +109,17 @@ async function apiRequest(path, options = {}) {
   }
   const url = new URL(`${getBaseUrl()}${path}`);
   url.searchParams.set("project", state.settings.project);
+  if (options.query) {
+    Object.entries(options.query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        url.searchParams.set(key, value);
+      }
+    });
+  }
 
   const response = await fetch(url.toString(), {
     ...options,
+    query: undefined,
     headers: {
       "Ocp-Apim-Subscription-Key": state.settings.apiKey,
       "Accept-Language": "de",
@@ -579,9 +587,9 @@ async function previewResults() {
   }
   try {
     showLoading();
-    const data = await apiRequest(`/search/views/${state.selectedViewId}/search`, {
-      method: "POST",
-      body: JSON.stringify({ page: 1, pageSize: 10 }),
+    const data = await apiRequest("/search", {
+      method: "GET",
+      query: { viewId: state.selectedViewId },
     });
     state.responses.results = data;
     setResponseJson(elements.resultsJson, data);
