@@ -101,10 +101,17 @@ button {
   color: #fff;
   cursor: pointer;
   font-weight: 600;
+  transition: all 0.2s;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background: var(--primary-dark);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Settings Section */

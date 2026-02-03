@@ -153,6 +153,7 @@ function renderViews() {
     item.addEventListener("click", () => {
       state.selectedViewId = view.id;
       renderViews();
+      updateButtonStates();
     });
     elements.viewsList.appendChild(item);
   });
@@ -165,6 +166,25 @@ function renderDraft() {
   renderFilters();
   renderFacets();
   updateRequestJson();
+  updateButtonStates();
+}
+
+function updateButtonStates() {
+  const isEditingExisting = !!state.selectedViewId;
+  elements.createViewBtn.disabled = isEditingExisting;
+  elements.updateViewBtn.disabled = !isEditingExisting;
+  
+  if (isEditingExisting) {
+    elements.createViewBtn.style.opacity = "0.5";
+    elements.createViewBtn.style.cursor = "not-allowed";
+    elements.updateViewBtn.style.opacity = "1";
+    elements.updateViewBtn.style.cursor = "pointer";
+  } else {
+    elements.createViewBtn.style.opacity = "1";
+    elements.createViewBtn.style.cursor = "pointer";
+    elements.updateViewBtn.style.opacity = "0.5";
+    elements.updateViewBtn.style.cursor = "not-allowed";
+  }
 }
 
 function renderFilters() {
@@ -510,6 +530,7 @@ async function createView() {
     });
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
+    state.selectedViewId = null;
     await loadViews();
   } catch (error) {
     setResponseJson(elements.responseJson, error);
