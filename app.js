@@ -727,19 +727,16 @@ function applyChatDraft() {
 }
 
 function wireEvents() {
-  elements.envSelect.addEventListener("change", () => {
-    state.settings.env = elements.envSelect.value;
-    saveSettings();
-  });
-
   elements.settingsForm.addEventListener("submit", (event) => {
     event.preventDefault();
     state.settings.apiKey = elements.dsApiKey.value.trim();
     state.settings.project = elements.dsProject.value.trim();
     state.settings.openaiKey = elements.openaiKey.value.trim();
     state.settings.openaiModel = elements.openaiModel.value.trim() || "gpt-4o-mini";
+    state.settings.env = elements.envSelect.value;
     saveSettings();
     updateSettingsStatus("Settings saved.");
+    loadViews();
   });
 
   elements.refreshViewsBtn.addEventListener("click", loadViews);

@@ -13,14 +13,6 @@
         <p class="subtitle">Discover.swiss Views Manager Chatbot</p>
       </div>
       <div class="header-actions">
-        <label class="select">
-          <span>Environment</span>
-          <select id="envSelect">
-            <option value="test">Test</option>
-            <option value="prod">Production</option>
-          </select>
-        </label>
-        <button id="refreshViewsBtn" class="secondary">Refresh views</button>
         <button id="chatbotBtn" class="secondary">Chatbot</button>
       </div>
     </header>
@@ -30,6 +22,13 @@
         <summary class="panel-summary"><h2>Settings</h2></summary>
         <form id="settingsForm" class="stack">
           <button type="submit">Save settings</button>
+          <label class="select">
+            <span>Environment</span>
+            <select id="envSelect">
+              <option value="test">Test</option>
+              <option value="prod">Production</option>
+            </select>
+          </label>
           <label>
             <span>discover.swiss API Key</span>
             <input id="dsApiKey" type="password" placeholder="Ocp-Apim-Subscription-Key" />
@@ -60,6 +59,7 @@
         <summary class="panel-summary"><h2>Views</h2></summary>
         <div class="stack">
           <div class="button-row">
+            <button id="refreshViewsBtn" class="secondary">Load views</button>
             <button id="loadViewBtn" class="secondary">Load selected</button>
             <button id="deleteViewBtn" class="danger">Delete</button>
           </div>
