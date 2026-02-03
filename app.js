@@ -80,12 +80,23 @@ function renderLivePreview() {
 
   liveContainer.innerHTML = "";
   
-  if (state.draft.facets.length === 0) {
-    liveContainer.innerHTML = "<div class=\"status\">No facets configured yet.</div>";
+  // Check if results exist
+  const results = state.responses.results;
+  const values = results?.values || [];
+  
+  if (!values || values.length === 0) {
+    liveContainer.innerHTML = "<div class=\"status\">No results. Run preview first.</div>";
     return;
   }
   
-  // Create table for facets display
+  // Get all unique keys from the results
+  const allKeys = new Set();
+  values.forEach(item => {
+    Object.keys(item).forEach(key => allKeys.add(key));
+  });
+  const keys = Array.from(allKeys);
+  
+  // Create table for results display
   const table = document.createElement("table");
   table.style.width = "100%";
   table.style.borderCollapse = "collapse";
@@ -97,12 +108,13 @@ function renderLivePreview() {
   headerRow.style.borderBottom = "2px solid var(--border)";
   headerRow.style.backgroundColor = "#f3f4f6";
   
-  ["Name", "Identifier", "Additional Type"].forEach(header => {
+  keys.forEach(key => {
     const th = document.createElement("th");
-    th.textContent = header;
+    th.textContent = key;
     th.style.padding = "12px";
     th.style.textAlign = "left";
     th.style.fontWeight = "600";
+    th.style.wordBreak = "break-word";
     headerRow.appendChild(th);
   });
   thead.appendChild(headerRow);
@@ -110,31 +122,31 @@ function renderLivePreview() {
   
   // Create body
   const tbody = document.createElement("tbody");
-  state.draft.facets.forEach((facet, index) => {
+  values.forEach((item, index) => {
     const row = document.createElement("tr");
     row.style.borderBottom = "1px solid var(--border)";
     if (index % 2 === 0) {
       row.style.backgroundColor = "#f9fafb";
     }
     
-    // Name cell
-    const nameCell = document.createElement("td");
-    nameCell.textContent = facet.name || "-";
-    nameCell.style.padding = "12px";
-    row.appendChild(nameCell);
-    
-    // Identifier cell (responseName)
-    const idCell = document.createElement("td");
-    idCell.textContent = facet.responseName || "-";
-    idCell.style.padding = "12px";
-    row.appendChild(idCell);
-    
-    // Additional Type cell
-    const typeCell = document.createElement("td");
-    const additionalTypes = facet.additionalType || [];
-    typeCell.textContent = additionalTypes.length > 0 ? additionalTypes.join(", ") : "-";
-    typeCell.style.padding = "12px";
-    row.appendChild(typeCell);
+    keys.forEach(key => {
+      const cell = document.createElement("td");
+      const value = item[key];
+      
+      if (value === null || value === undefined) {
+        cell.textContent = "-";
+      } else if (typeof value === "object") {
+        cell.textContent = JSON.stringify(value);
+        cell.style.fontSize = "0.85em";
+        cell.style.color = "#666";
+      } else {
+        cell.textContent = String(value);
+      }
+      
+      cell.style.padding = "12px";
+      cell.style.wordBreak = "break-word";
+      row.appendChild(cell);
+    });
     
     tbody.appendChild(row);
   });
