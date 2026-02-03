@@ -32,6 +32,7 @@ const state = {
 const elements = {
   envSelect: document.getElementById("envSelect"),
   refreshViewsBtn: document.getElementById("refreshViewsBtn"),
+  chatbotBtn: document.getElementById("chatbotBtn"),
   settingsForm: document.getElementById("settingsForm"),
   dsApiKey: document.getElementById("dsApiKey"),
   dsProject: document.getElementById("dsProject"),
@@ -730,6 +731,7 @@ function wireEvents() {
   });
 
   elements.refreshViewsBtn.addEventListener("click", loadViews);
+  elements.chatbotBtn.addEventListener("click", () => switchTab("chat"));
   elements.loadViewBtn.addEventListener("click", loadSelectedView);
   elements.deleteViewBtn.addEventListener("click", deleteView);
 
