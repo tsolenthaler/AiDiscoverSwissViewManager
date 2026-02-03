@@ -603,7 +603,10 @@ async function previewResults() {
     });
     state.responses.results = data;
     setResponseJson(elements.resultsJson, data);
-    switchTab("results");
+    const resultsPanel = document.getElementById("resultsPanel");
+    if (resultsPanel) {
+      resultsPanel.open = true;
+    }
   } catch (error) {
     setResponseJson(elements.resultsJson, error);
   } finally {

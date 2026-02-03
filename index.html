@@ -72,7 +72,6 @@
         <div class="tabs">
           <button class="tab active" data-tab="draft">Draft editor</button>
           <button class="tab" data-tab="response">Responses</button>
-          <button class="tab" data-tab="results">Results</button>
         </div>
 
         <div id="tab-draft" class="tab-content active">
@@ -134,19 +133,19 @@
           </div>
         </div>
 
-        <div id="tab-results" class="tab-content">
-          <div>
-            <div class="section-title">Search results</div>
-            <pre id="resultsJson" class="code-block"></pre>
-          </div>
-        </div>
-
         <div id="tab-response" class="tab-content">
           <div>
             <div class="section-title">API response</div>
             <button id="copyResponseBtn" class="ghost">Copy response JSON</button>
             <pre id="responseJson" class="code-block"></pre>
           </div>
+        </div>
+      </details>
+
+      <details class="panel" id="resultsPanel" open>
+        <summary class="panel-summary"><h2>Search results</h2></summary>
+        <div>
+          <pre id="resultsJson" class="code-block"></pre>
         </div>
       </details>
     </main>
