@@ -15,9 +15,7 @@ const state = {
     name: "",
     description: "",
     scheduleStrategy: "Daily",
-    filterType: "combinedTypeTree",
-    filterValues: [],
-    facets: [],
+    filters: [],
   },
   responses: {
     request: {},
@@ -45,10 +43,10 @@ const elements = {
   draftName: document.getElementById("draftName"),
   draftDescription: document.getElementById("draftDescription"),
   draftSchedule: document.getElementById("draftSchedule"),
-  filterType: document.getElementById("filterType"),
-  filterValues: document.getElementById("filterValues"),
-  addFacetBtn: document.getElementById("addFacetBtn"),
+  addFilterBtn: document.getElementById("addFilterBtn"),
+  filterList: document.getElementById("filterList"),
   facetList: document.getElementById("facetList"),
+  addFacetBtn: document.getElementById("addFacetBtn"),
   createViewBtn: document.getElementById("createViewBtn"),
   updateViewBtn: document.getElementById("updateViewBtn"),
   previewResultsBtn: document.getElementById("previewResultsBtn"),
@@ -163,9 +161,89 @@ function renderDraft() {
   elements.draftName.value = state.draft.name;
   elements.draftDescription.value = state.draft.description;
   elements.draftSchedule.value = state.draft.scheduleStrategy;
-  elements.filterType.value = state.draft.filterType;
-  elements.filterValues.value = state.draft.filterValues.join("\n");
+  renderFilters();
   renderFacets();
+  updateRequestJson();
+}
+
+function renderFilters() {
+  elements.filterList.innerHTML = "";
+  if (!state.draft.filters.length) {
+    const empty = document.createElement("div");
+    empty.className = "status";
+    empty.textContent = "No filters configured yet.";
+    elements.filterList.appendChild(empty);
+    return;
+  }
+
+  state.draft.filters.forEach((filter, index) => {
+    const card = document.createElement("div");
+    card.className = "filter-card";
+    card.innerHTML = `
+      <header>
+        <h4>Filter ${index + 1}</h4>
+        <div class="button-row">
+          <button class="secondary" data-action="up">Up</button>
+          <button class="secondary" data-action="down">Down</button>
+          <button class="danger" data-action="remove">Remove</button>
+        </div>
+      </header>
+      <div class="grid-2">
+        <label>
+          <span>Filter type</span>
+          <select data-field="type">
+            <option value="combinedTypeTree" ${filter.type === "combinedTypeTree" ? "selected" : ""}>Typenbaum (combinedTypeTree)</option>
+            <option value="categoryTree" ${filter.type === "categoryTree" ? "selected" : ""}>Kategorienbaum (categoryTree)</option>
+          </select>
+        </label>
+        <label class="full">
+          <span>Filter values (one per line)</span>
+          <textarea rows="3" data-field="values" placeholder="Thing|Place|LocalBusiness|FoodEstablishment">${(filter.values || []).join("\n")}</textarea>
+        </label>
+      </div>
+    `;
+
+    card.querySelectorAll("button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.action;
+        if (action === "remove") {
+          state.draft.filters.splice(index, 1);
+        } else if (action === "up" && index > 0) {
+          [state.draft.filters[index - 1], state.draft.filters[index]] = [
+            state.draft.filters[index],
+            state.draft.filters[index - 1],
+          ];
+        } else if (action === "down" && index < state.draft.filters.length - 1) {
+          [state.draft.filters[index + 1], state.draft.filters[index]] = [
+            state.draft.filters[index],
+            state.draft.filters[index + 1],
+          ];
+        }
+        renderFilters();
+        updateRequestJson();
+      });
+    });
+
+    card.querySelectorAll("input, textarea, select").forEach((input) => {
+      input.addEventListener("input", () => {
+        const field = input.dataset.field;
+        updateFilterField(index, field, input.value);
+      });
+    });
+
+    elements.filterList.appendChild(card);
+  });
+}
+
+function updateFilterField(index, field, value) {
+  const filter = state.draft.filters[index];
+  if (!filter) return;
+
+  if (field === "values") {
+    filter.values = value.split("\n").map((v) => v.trim()).filter(Boolean);
+  } else if (field === "type") {
+    filter.type = value;
+  }
   updateRequestJson();
 }
 
@@ -311,11 +389,13 @@ function buildRequestBody() {
       .filter((facet) => facet.name),
   };
 
-  if (state.draft.filterType === "combinedTypeTree") {
-    searchRequest.combinedTypeTree = state.draft.filterValues;
-  } else if (state.draft.filterType === "categoryTree") {
-    searchRequest.categoryTree = state.draft.filterValues;
-  }
+  state.draft.filters.forEach((filter) => {
+    if (filter.type === "combinedTypeTree") {
+      searchRequest.combinedTypeTree = filter.values;
+    } else if (filter.type === "categoryTree") {
+      searchRequest.categoryTree = filter.values;
+    }
+  });
 
   return {
     name: state.draft.name,
@@ -386,11 +466,26 @@ function applyViewToDraft(view) {
   state.draft.name = view.name || "";
   state.draft.description = view.description || "";
   state.draft.scheduleStrategy = view.scheduleStrategy || "Daily";
-  state.draft.filterType = view.searchRequest?.combinedTypeTree?.length
-    ? "combinedTypeTree"
-    : "categoryTree";
-  state.draft.filterValues =
-    view.searchRequest?.combinedTypeTree || view.searchRequest?.categoryTree || [];
+  
+  // Reset filters
+  state.draft.filters = [];
+  
+  // Add combinedTypeTree filter if present
+  if (view.searchRequest?.combinedTypeTree?.length) {
+    state.draft.filters.push({
+      type: "combinedTypeTree",
+      values: view.searchRequest.combinedTypeTree,
+    });
+  }
+  
+  // Add categoryTree filter if present
+  if (view.searchRequest?.categoryTree?.length) {
+    state.draft.filters.push({
+      type: "categoryTree",
+      values: view.searchRequest.categoryTree,
+    });
+  }
+  
   state.draft.facets = (view.searchRequest?.facets || []).map((facet) => ({
     name: facet.name,
     responseName: facet.responseName,
@@ -554,14 +649,24 @@ function applyChatDraft() {
   state.draft.name = json.name || state.draft.name;
   state.draft.description = json.description || state.draft.description;
   state.draft.scheduleStrategy = json.scheduleStrategy || state.draft.scheduleStrategy;
+  
   const searchRequest = json.searchRequest || {};
+  state.draft.filters = [];
+  
   if (searchRequest.combinedTypeTree?.length) {
-    state.draft.filterType = "combinedTypeTree";
-    state.draft.filterValues = searchRequest.combinedTypeTree;
-  } else if (searchRequest.categoryTree?.length) {
-    state.draft.filterType = "categoryTree";
-    state.draft.filterValues = searchRequest.categoryTree;
+    state.draft.filters.push({
+      type: "combinedTypeTree",
+      values: searchRequest.combinedTypeTree,
+    });
   }
+  
+  if (searchRequest.categoryTree?.length) {
+    state.draft.filters.push({
+      type: "categoryTree",
+      values: searchRequest.categoryTree,
+    });
+  }
+  
   if (Array.isArray(searchRequest.facets)) {
     state.draft.facets = searchRequest.facets.map((facet) => ({
       name: facet.name,
@@ -612,17 +717,12 @@ function wireEvents() {
     updateRequestJson();
   });
 
-  elements.filterType.addEventListener("change", () => {
-    state.draft.filterType = elements.filterType.value;
-    updateRequestJson();
-  });
-
-  elements.filterValues.addEventListener("input", () => {
-    state.draft.filterValues = elements.filterValues.value
-      .split("\n")
-      .map((v) => v.trim())
-      .filter(Boolean);
-    updateRequestJson();
+  elements.addFilterBtn.addEventListener("click", () => {
+    state.draft.filters.push({
+      type: "combinedTypeTree",
+      values: [],
+    });
+    renderFilters();
   });
 
   elements.addFacetBtn.addEventListener("click", () => {

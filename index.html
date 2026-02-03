@@ -102,18 +102,12 @@
             </label>
           </div>
 
-          <div class="grid-2">
-            <label>
-              <span>Filter type</span>
-              <select id="filterType">
-                <option value="combinedTypeTree">Typenbaum (combinedTypeTree)</option>
-                <option value="categoryTree">Kategorienbaum (categoryTree)</option>
-              </select>
-            </label>
-            <label>
-              <span>Filter values (one per line)</span>
-              <textarea id="filterValues" rows="4" placeholder="Thing|Place|LocalBusiness|FoodEstablishment"></textarea>
-            </label>
+          <div class="filter-section">
+            <div class="filter-header">
+              <h3>Filters</h3>
+              <button id="addFilterBtn" class="secondary">Add filter</button>
+            </div>
+            <div id="filterList" class="filter-list"></div>
           </div>
 
           <div class="facet-section">
