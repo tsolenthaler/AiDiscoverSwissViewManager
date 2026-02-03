@@ -26,8 +26,8 @@
     </header>
 
     <main class="layout">
-      <section class="panel">
-        <h2>Settings</h2>
+      <details class="panel" open>
+        <summary class="panel-summary"><h2>Settings</h2></summary>
         <form id="settingsForm" class="stack">
           <button type="submit">Save settings</button>
           <label>
@@ -54,10 +54,10 @@
           </details>
         </form>
         <div id="settingsStatus" class="status"></div>
-      </section>
+      </details>
 
-      <section class="panel">
-        <h2>Views</h2>
+      <details class="panel" open>
+        <summary class="panel-summary"><h2>Views</h2></summary>
         <div class="stack">
           <div class="button-row">
             <button id="loadViewBtn" class="secondary">Load selected</button>
@@ -65,9 +65,10 @@
           </div>
           <div id="viewsList" class="list"></div>
         </div>
-      </section>
+      </details>
 
-      <section class="panel wide">
+      <details class="panel wide" open>
+        <summary class="panel-summary"><h2>Editor</h2></summary>
         <div class="tabs">
           <button class="tab active" data-tab="draft">Draft editor</button>
           <button class="tab" data-tab="response">Responses</button>
@@ -147,7 +148,7 @@
             <pre id="responseJson" class="code-block"></pre>
           </div>
         </div>
-      </section>
+      </details>
     </main>
 
     <footer class="footer">

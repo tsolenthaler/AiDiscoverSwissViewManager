@@ -51,12 +51,67 @@ body {
 
 .panel {
   background: var(--panel);
-  padding: 20px;
+  padding: 0;
   border-radius: 16px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  height: fit-content;
+}
+
+.panel:not([open]) {
+  width: fit-content;
+  padding: 0;
+}
+
+.panel[open] {
+  padding: 20px;
+  width: 100%;
+}
+
+.panel-summary {
+  cursor: pointer;
+  padding: 20px;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.panel:not([open]) > .panel-summary {
+  padding: 12px 16px;
+}
+
+.panel-summary:hover {
+  background: #f9fafb;
+  border-radius: 16px 16px 0 0;
+}
+
+.panel[open] > .panel-summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-summary h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.panel-summary::before {
+  content: "▶";
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 0.75rem;
+  width: 16px;
+}
+
+.panel[open] > .panel-summary::before {
+  transform: rotate(90deg);
 }
 
 .panel.wide {
