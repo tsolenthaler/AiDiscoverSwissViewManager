@@ -593,7 +593,7 @@ async function previewResults() {
     });
     state.responses.results = data;
     setResponseJson(elements.resultsJson, data);
-    switchTab("response");
+    switchTab("results");
   } catch (error) {
     setResponseJson(elements.resultsJson, error);
   } finally {
