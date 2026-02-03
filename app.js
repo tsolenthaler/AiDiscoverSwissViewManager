@@ -89,14 +89,7 @@ function renderLivePreview() {
     return;
   }
   
-  // Get all unique keys from the results
-  const allKeys = new Set();
-  values.forEach(item => {
-    Object.keys(item).forEach(key => allKeys.add(key));
-  });
-  const keys = Array.from(allKeys);
-  
-  // Create table for results display
+  // Create table for results display with only specific columns
   const table = document.createElement("table");
   table.style.width = "100%";
   table.style.borderCollapse = "collapse";
@@ -108,9 +101,9 @@ function renderLivePreview() {
   headerRow.style.borderBottom = "2px solid var(--border)";
   headerRow.style.backgroundColor = "#f3f4f6";
   
-  keys.forEach(key => {
+  ["name", "identifier", "additionalType"].forEach(header => {
     const th = document.createElement("th");
-    th.textContent = key;
+    th.textContent = header;
     th.style.padding = "12px";
     th.style.textAlign = "left";
     th.style.fontWeight = "600";
@@ -129,7 +122,7 @@ function renderLivePreview() {
       row.style.backgroundColor = "#f9fafb";
     }
     
-    keys.forEach(key => {
+    ["name", "identifier", "additionalType"].forEach(key => {
       const cell = document.createElement("td");
       const value = item[key];
       
