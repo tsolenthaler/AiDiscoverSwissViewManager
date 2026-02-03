@@ -78,7 +78,6 @@
           <div class="button-row">
             <button id="createViewBtn">Create view</button>
             <button id="updateViewBtn" class="secondary">Update view</button>
-            <button id="previewResultsBtn" class="secondary">Preview results</button>
             <button id="copyRequestBtn" class="ghost">Copy request JSON</button>
           </div>
 
@@ -143,7 +142,10 @@
       </details>
 
       <details class="panel" id="resultsPanel" open>
-        <summary class="panel-summary"><h2>Search results</h2></summary>
+        <summary class="panel-summary"><h2>Preview</h2></summary>
+        <div class="button-row">
+          <button id="previewResultsBtn" class="secondary">Preview results</button>
+        </div>
         <div>
           <pre id="resultsJson" class="code-block"></pre>
         </div>
