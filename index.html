@@ -69,6 +69,7 @@
         <summary class="panel-summary"><h2>Editor</h2></summary>
         <div class="tabs">
           <button class="tab active" data-tab="draft">Draft editor</button>
+          <button class="tab" data-tab="request">Request</button>
           <button class="tab" data-tab="response">Responses</button>
         </div>
 
@@ -76,7 +77,6 @@
           <div class="button-row">
             <button id="createViewBtn">Create view</button>
             <button id="updateViewBtn" class="secondary">Update view</button>
-            <button id="copyRequestBtn" class="ghost">Copy request JSON</button>
           </div>
 
           <div class="grid-2">
@@ -115,7 +115,13 @@
             </div>
             <div id="facetList" class="facet-list"></div>
           </div>
+        </div>
 
+        <div id="tab-request" class="tab-content">
+          <div class="section-title">API request</div>
+          <div class="button-row">
+            <button id="copyRequestBtn" class="ghost">Copy request JSON</button>
+          </div>
           <pre id="requestJson" class="code-block"></pre>
         </div>
 
