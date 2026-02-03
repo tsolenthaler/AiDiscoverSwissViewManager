@@ -133,8 +133,15 @@
         <div class="button-row">
           <button id="previewResultsBtn" class="secondary">Preview results</button>
         </div>
-        <div>
+        <div class="tabs" id="previewTabs">
+          <button class="tab active" data-tab="results">Results</button>
+          <button class="tab" data-tab="live">Live</button>
+        </div>
+        <div id="tab-results" class="tab-content active">
           <pre id="resultsJson" class="code-block"></pre>
+        </div>
+        <div id="tab-live" class="tab-content">
+          <div id="liveContainer"></div>
         </div>
       </details>
 
@@ -160,5 +167,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@discover-swiss/web-component@latest/dist/discover-swiss-web-component.js"></script>
   </body>
 </html>

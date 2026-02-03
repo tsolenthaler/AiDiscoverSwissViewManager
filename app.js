@@ -74,6 +74,75 @@ function hideLoading() {
   elements.loadingOverlay.classList.remove("active");
 }
 
+function renderLivePreview() {
+  const liveContainer = document.getElementById("liveContainer");
+  if (!liveContainer) return;
+
+  liveContainer.innerHTML = "";
+  
+  if (state.draft.facets.length === 0) {
+    liveContainer.innerHTML = "<div class=\"status\">No facets configured yet.</div>";
+    return;
+  }
+  
+  // Create table for facets display
+  const table = document.createElement("table");
+  table.style.width = "100%";
+  table.style.borderCollapse = "collapse";
+  table.style.marginTop = "16px";
+  
+  // Create header
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  headerRow.style.borderBottom = "2px solid var(--border)";
+  headerRow.style.backgroundColor = "#f3f4f6";
+  
+  ["Name", "Identifier", "Additional Type"].forEach(header => {
+    const th = document.createElement("th");
+    th.textContent = header;
+    th.style.padding = "12px";
+    th.style.textAlign = "left";
+    th.style.fontWeight = "600";
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+  
+  // Create body
+  const tbody = document.createElement("tbody");
+  state.draft.facets.forEach((facet, index) => {
+    const row = document.createElement("tr");
+    row.style.borderBottom = "1px solid var(--border)";
+    if (index % 2 === 0) {
+      row.style.backgroundColor = "#f9fafb";
+    }
+    
+    // Name cell
+    const nameCell = document.createElement("td");
+    nameCell.textContent = facet.name || "-";
+    nameCell.style.padding = "12px";
+    row.appendChild(nameCell);
+    
+    // Identifier cell (responseName)
+    const idCell = document.createElement("td");
+    idCell.textContent = facet.responseName || "-";
+    idCell.style.padding = "12px";
+    row.appendChild(idCell);
+    
+    // Additional Type cell
+    const typeCell = document.createElement("td");
+    const additionalTypes = facet.additionalType || [];
+    typeCell.textContent = additionalTypes.length > 0 ? additionalTypes.join(", ") : "-";
+    typeCell.style.padding = "12px";
+    row.appendChild(typeCell);
+    
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+  
+  liveContainer.appendChild(table);
+}
+
 function getBaseUrl() {
   return state.settings.env === "prod"
     ? "https://api.discover.swiss/info/v2"
@@ -468,6 +537,10 @@ function renderChat() {
 function switchTab(tabName) {
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
   tabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
+  
+  if (tabName === "live") {
+    renderLivePreview();
+  }
 }
 
 async function loadViews() {
@@ -819,6 +892,20 @@ function init() {
           other.open = false;
         }
       });
+    });
+  });
+
+  const previewTabs = document.querySelectorAll("#previewTabs .tab");
+  previewTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const tabName = tab.dataset.tab;
+      previewTabs.forEach((t) => t.classList.toggle("active", t === tab));
+      const tabContents = document.querySelectorAll("#resultsPanel .tab-content");
+      tabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
+      
+      if (tabName === "live") {
+        renderLivePreview();
+      }
     });
   });
 }
