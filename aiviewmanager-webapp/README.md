@@ -1,40 +1,28 @@
 # AIViewManager Web App
 
-AIViewManager is a chatbot designed to manage views for discover.swiss. This web application allows users to create, edit, and manage views efficiently while securely storing API keys and project information.
+AIViewManager is a chatbot-based single-page web app for managing discover.swiss Views. It supports offline credential storage via LocalStorage, view listing, creation/editing, and API response inspection.
 
 ## Project Structure
 
-The project consists of the following files and directories:
+The app is a static GitHub Pages-ready site:
 
-- **src/app.ts**: Entry point of the application. Initializes the AIViewManager chatbot and handles user interactions.
-- **src/components/index.ts**: Exports UI components for creating and editing views, displaying existing views, and managing API keys.
-- **src/services/index.ts**: Contains functions for interacting with the discover.swiss API, including methods for listing, creating, updating, and deleting views.
-- **src/storage/index.ts**: Manages offline storage of the API key and project information, providing secure save and retrieve functions.
-- **src/types/index.ts**: Exports TypeScript interfaces and types used throughout the application, including definitions for views, API responses, and configuration settings.
-
-## Installation
-
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   ```
-2. Navigate to the project directory:
-   ```
-   cd aiviewmanager-webapp
-   ```
-3. Install the dependencies:
-   ```
-   npm install
-   ```
+- **index.html**: Layout and UI structure
+- **styles.css**: Styling and layout
+- **app.js**: Application logic (settings, API calls, chatbot, view draft builder)
 
 ## Usage
 
-To start the application, run:
-```
-npm start
-```
+Open [index.html](index.html) in a browser (or deploy the folder to GitHub Pages). Then:
 
-This will launch the web app, allowing you to interact with the AIViewManager chatbot.
+1. Enter discover.swiss API key + project name
+2. Enter OpenAI API key + model
+3. Save settings (stored locally in your browser)
+4. Load views, create/update views, or use the chatbot to draft JSON
+
+## Notes
+
+- Credentials are stored locally (LocalStorage) and never sent to any server other than the configured APIs.
+- The chatbot uses the OpenAI API directly from the browser.
 
 ## API Reference
 
