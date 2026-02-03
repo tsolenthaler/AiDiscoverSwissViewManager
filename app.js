@@ -83,11 +83,22 @@ function renderLivePreview() {
   // Check if results exist
   const results = state.responses.results;
   const values = results?.values || [];
+  const count = results?.count ?? 0;
   
   if (!values || values.length === 0) {
     liveContainer.innerHTML = "<div class=\"status\">No results. Run preview first.</div>";
     return;
   }
+  
+  // Display count
+  const countDiv = document.createElement("div");
+  countDiv.style.marginBottom = "16px";
+  countDiv.style.padding = "12px";
+  countDiv.style.backgroundColor = "#e0f2fe";
+  countDiv.style.borderRadius = "8px";
+  countDiv.style.fontWeight = "600";
+  countDiv.textContent = `Results Count: ${count}`;
+  liveContainer.appendChild(countDiv);
   
   // Create table for results display with only specific columns
   const table = document.createElement("table");
