@@ -68,6 +68,13 @@
         </div>
 
         <div id="tab-draft" class="tab-content active">
+          <div class="button-row">
+            <button id="createViewBtn">Create view</button>
+            <button id="updateViewBtn" class="secondary">Update view</button>
+            <button id="previewResultsBtn" class="secondary">Preview results</button>
+            <button id="copyRequestBtn" class="ghost">Copy request JSON</button>
+          </div>
+
           <div class="grid-2">
             <label>
               <span>Name</span>
@@ -109,13 +116,6 @@
               <button id="addFacetBtn" class="secondary">Add facet</button>
             </div>
             <div id="facetList" class="facet-list"></div>
-          </div>
-
-          <div class="button-row">
-            <button id="createViewBtn">Create view</button>
-            <button id="updateViewBtn" class="secondary">Update view</button>
-            <button id="previewResultsBtn" class="secondary">Preview results</button>
-            <button id="copyRequestBtn" class="ghost">Copy request JSON</button>
           </div>
 
           <pre id="requestJson" class="code-block"></pre>
