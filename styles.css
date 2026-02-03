@@ -43,8 +43,8 @@ body {
 }
 
 .layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr 2.2fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
   padding: 24px 40px 40px;
 }
@@ -57,18 +57,24 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: fit-content;
   height: fit-content;
 }
 
 .panel:not([open]) {
+  flex: 0 0 auto;
   width: fit-content;
   padding: 0;
 }
 
 .panel[open] {
   padding: 20px;
-  width: 100%;
+  flex: 1 1 100%;
+}
+
+.panel.wide {
+  flex: 1 1 100%;
 }
 
 .panel-summary {
