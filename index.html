@@ -121,17 +121,6 @@
           <pre id="requestJson" class="code-block"></pre>
         </div>
 
-        <div id="tab-chat" class="tab-content">
-          <div id="chatLog" class="chat-log"></div>
-          <form id="chatForm" class="chat-input">
-            <input id="chatMessage" type="text" placeholder="Ask the AIViewManager bot..." />
-            <button type="submit">Send</button>
-          </form>
-          <div class="button-row">
-            <button id="applyChatDraftBtn" class="secondary">Apply JSON from last reply</button>
-          </div>
-        </div>
-
         <div id="tab-response" class="tab-content">
           <div>
             <div class="section-title">API response</div>
@@ -148,6 +137,18 @@
         </div>
         <div>
           <pre id="resultsJson" class="code-block"></pre>
+        </div>
+      </details>
+
+      <details class="panel" id="chatbotPanel">
+        <summary class="panel-summary"><h2>Chatbot</h2></summary>
+        <div id="chatLog" class="chat-log"></div>
+        <form id="chatForm" class="chat-input">
+          <input id="chatMessage" type="text" placeholder="Ask the AIViewManager bot..." />
+          <button type="submit">Send</button>
+        </form>
+        <div class="button-row">
+          <button id="applyChatDraftBtn" class="secondary">Apply JSON from last reply</button>
         </div>
       </details>
     </main>

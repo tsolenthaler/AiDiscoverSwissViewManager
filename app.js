@@ -740,7 +740,13 @@ function wireEvents() {
   });
 
   elements.refreshViewsBtn.addEventListener("click", loadViews);
-  elements.chatbotBtn.addEventListener("click", () => switchTab("chat"));
+  elements.chatbotBtn.addEventListener("click", () => {
+    const chatbotPanel = document.getElementById("chatbotPanel");
+    if (!chatbotPanel) return;
+    document.querySelectorAll("details.panel").forEach((panel) => {
+      panel.open = panel === chatbotPanel;
+    });
+  });
   elements.loadViewBtn.addEventListener("click", loadSelectedView);
   elements.deleteViewBtn.addEventListener("click", deleteView);
 
