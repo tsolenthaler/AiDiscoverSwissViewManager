@@ -108,6 +108,12 @@ body {
   font-weight: 600;
 }
 
+.panel-summary h2 #editorViewTitle {
+  font-weight: 400;
+  color: var(--primary);
+  margin-left: 8px;
+}
+
 .panel-summary::before {
   content: "▶";
   display: inline-block;

@@ -59,6 +59,7 @@ const elements = {
   responseJson: document.getElementById("responseJson"),
   resultsJson: document.getElementById("resultsJson"),
   copyResponseBtn: document.getElementById("copyResponseBtn"),
+  editorViewTitle: document.getElementById("editorViewTitle"),
   chatLog: document.getElementById("chatLog"),
   chatForm: document.getElementById("chatForm"),
   chatMessage: document.getElementById("chatMessage"),
@@ -250,10 +251,22 @@ function renderViews() {
       state.selectedViewId = view.id;
       renderViews();
       updateButtonStates();
+      updateEditorViewTitle();
       loadSelectedView();
     });
     elements.viewsList.appendChild(item);
   });
+}
+
+function updateEditorViewTitle() {
+  if (state.selectedViewId) {
+    const selectedView = state.views.find((v) => v.id === state.selectedViewId);
+    if (selectedView) {
+      elements.editorViewTitle.textContent = ` · ${selectedView.name || selectedView.id}`;
+    }
+  } else {
+    elements.editorViewTitle.textContent = "";
+  }
 }
 
 function renderDraft() {
@@ -646,6 +659,7 @@ async function createView() {
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
     state.selectedViewId = null;
+    updateEditorViewTitle();
     await loadViews();
   } catch (error) {
     setResponseJson(elements.responseJson, error);
@@ -664,6 +678,7 @@ async function updateView() {
     });
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
+    updateEditorViewTitle();
     await loadViews();
   } catch (error) {
     setResponseJson(elements.responseJson, error);
@@ -678,6 +693,7 @@ async function deleteView() {
     showLoading();
     await apiRequest(`/search/views/${state.selectedViewId}`, { method: "DELETE" });
     state.selectedViewId = null;
+    updateEditorViewTitle();
     await loadViews();
     setResponseJson(elements.responseJson, { message: "Deleted." });
   } catch (error) {
@@ -738,6 +754,20 @@ async function sendChatMessage(message) {
     updateSettingsStatus("Please save OpenAI API key first.", true);
     return;
   }
+  
+  // Get current view context if available
+  const currentViewContext = state.selectedViewId && state.views.length > 0
+    ? state.views.find((v) => v.id === state.selectedViewId)
+    : null;
+  
+  const currentViewJson = currentViewContext 
+    ? JSON.stringify(currentViewContext, null, 2)
+    : null;
+  
+  const viewContextInfo = currentViewContext
+    ? `\n\nCURRENT VIEW CONTEXT:\nView ID: ${currentViewContext.id}\nView Name: ${currentViewContext.name}\nView Data:\n${currentViewJson}`
+    : "\n\nNo view currently selected. User is creating a new view from scratch.";
+  
   const systemPrompt = `You are AIViewManager, a helpful assistant for creating and editing discover.swiss SearchViewRequest configurations.
 
 Your role:
@@ -745,6 +775,7 @@ Your role:
 - Provide suggestions based on discover.swiss API capabilities
 - Generate valid JSON when requested
 - Help optimize search strategies
+- ${currentViewContext ? `Assist in modifying the currently selected view (${currentViewContext.name})` : "Help create new views"}
 
 discover.swiss API Documentation:
 - Environments: Test (api.discover.swiss/test/info/v2), Production (api.discover.swiss/info/v2)
@@ -802,7 +833,9 @@ When creating views:
 4. Provide complete JSON structure
 5. Guide on filters and facet configuration
 
-Respond in JSON when user asks "create", "generate", or "suggest" a view.
+${viewContextInfo}
+
+Respond in JSON when user asks "create", "generate", "suggest", "update", or "modify" a view.
 Keep technical details concise but complete.`;
 
   const messages = [
