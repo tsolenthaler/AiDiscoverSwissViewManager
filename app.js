@@ -61,10 +61,19 @@ const elements = {
   chatForm: document.getElementById("chatForm"),
   chatMessage: document.getElementById("chatMessage"),
   applyChatDraftBtn: document.getElementById("applyChatDraftBtn"),
+  loadingOverlay: document.getElementById("loadingOverlay"),
 };
 
 const tabs = document.querySelectorAll(".tab");
 const tabContents = document.querySelectorAll(".tab-content");
+
+function showLoading() {
+  elements.loadingOverlay.classList.add("active");
+}
+
+function hideLoading() {
+  elements.loadingOverlay.classList.remove("active");
+}
 
 function getBaseUrl() {
   return state.settings.env === "prod"
@@ -344,6 +353,7 @@ function switchTab(tabName) {
 
 async function loadViews() {
   try {
+    showLoading();
     const data = await apiRequest("/search/views", { method: "GET" });
     state.views = Array.isArray(data) ? data : [];
     renderViews();
@@ -351,12 +361,15 @@ async function loadViews() {
     state.views = [];
     renderViews();
     setResponseJson(elements.responseJson, error);
+  } finally {
+    hideLoading();
   }
 }
 
 async function loadSelectedView() {
   if (!state.selectedViewId) return;
   try {
+    showLoading();
     const data = await apiRequest(`/search/views/${state.selectedViewId}`, { method: "GET" });
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
@@ -364,6 +377,8 @@ async function loadSelectedView() {
     switchTab("draft");
   } catch (error) {
     setResponseJson(elements.responseJson, error);
+  } finally {
+    hideLoading();
   }
 }
 
@@ -391,6 +406,7 @@ function applyViewToDraft(view) {
 
 async function createView() {
   try {
+    showLoading();
     const requestBody = buildRequestBody();
     const data = await apiRequest("/search/views", {
       method: "POST",
@@ -401,12 +417,14 @@ async function createView() {
     await loadViews();
   } catch (error) {
     setResponseJson(elements.responseJson, error);
+    hideLoading();
   }
 }
 
 async function updateView() {
   if (!state.selectedViewId) return;
   try {
+    showLoading();
     const requestBody = buildRequestBody();
     const data = await apiRequest(`/search/views/${state.selectedViewId}`, {
       method: "PUT",
@@ -417,6 +435,7 @@ async function updateView() {
     await loadViews();
   } catch (error) {
     setResponseJson(elements.responseJson, error);
+    hideLoading();
   }
 }
 
@@ -424,12 +443,14 @@ async function deleteView() {
   if (!state.selectedViewId) return;
   if (!confirm("Delete this view?") ) return;
   try {
+    showLoading();
     await apiRequest(`/search/views/${state.selectedViewId}`, { method: "DELETE" });
     state.selectedViewId = null;
     await loadViews();
     setResponseJson(elements.responseJson, { message: "Deleted." });
   } catch (error) {
     setResponseJson(elements.responseJson, error);
+    hideLoading();
   }
 }
 
@@ -439,6 +460,7 @@ async function previewResults() {
     return;
   }
   try {
+    showLoading();
     const data = await apiRequest(`/search/views/${state.selectedViewId}/search`, {
       method: "POST",
       body: JSON.stringify({ page: 1, pageSize: 10 }),
@@ -448,6 +470,8 @@ async function previewResults() {
     switchTab("response");
   } catch (error) {
     setResponseJson(elements.resultsJson, error);
+  } finally {
+    hideLoading();
   }
 }
 
