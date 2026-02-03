@@ -222,7 +222,19 @@ function renderFilters() {
       <div class="grid-2">
         <label>
           <span>Filter type</span>
-          <input data-field="type" value="${filter.type || ""}" placeholder="combinedTypeTree" />
+          <select data-field="type">
+            <option value="combinedTypeTree" ${filter.type === "combinedTypeTree" ? "selected" : ""}>combinedTypeTree</option>
+            <option value="categoryTree" ${filter.type === "categoryTree" ? "selected" : ""}>categoryTree</option>
+            <option value="filters" ${filter.type === "filters" ? "selected" : ""}>filters</option>
+            <option value="award" ${filter.type === "award" ? "selected" : ""}>award</option>
+            <option value="campaignTag" ${filter.type === "campaignTag" ? "selected" : ""}>campaignTag</option>
+            <option value="allTag" ${filter.type === "allTag" ? "selected" : ""}>allTag</option>
+            <option value="category" ${filter.type === "category" ? "selected" : ""}>category</option>
+            <option value="amenityFeature" ${filter.type === "amenityFeature" ? "selected" : ""}>amenityFeature</option>
+            <option value="starRatingName" ${filter.type === "starRatingName" ? "selected" : ""}>starRatingName</option>
+            <option value="addressLocality" ${filter.type === "addressLocality" ? "selected" : ""}>addressLocality</option>
+            <option value="addressPostalCode" ${filter.type === "addressPostalCode" ? "selected" : ""}>addressPostalCode</option>
+          </select>
         </label>
         <label class="full">
           <span>Filter values (one per line)</span>
