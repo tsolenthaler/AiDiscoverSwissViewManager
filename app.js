@@ -16,6 +16,7 @@ const state = {
     description: "",
     scheduleStrategy: "Daily",
     filters: [],
+    facets: [],
   },
   responses: {
     request: {},
