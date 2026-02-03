@@ -28,6 +28,7 @@
       <section class="panel">
         <h2>Settings</h2>
         <form id="settingsForm" class="stack">
+          <button type="submit">Save settings</button>
           <label>
             <span>discover.swiss API Key</span>
             <input id="dsApiKey" type="password" placeholder="Ocp-Apim-Subscription-Key" />
@@ -44,7 +45,6 @@
             <span>OpenAI Model</span>
             <input id="openaiModel" type="text" placeholder="gpt-4o-mini" />
           </label>
-          <button type="submit">Save settings</button>
         </form>
         <div id="settingsStatus" class="status"></div>
       </section>
@@ -52,11 +52,11 @@
       <section class="panel">
         <h2>Views</h2>
         <div class="stack">
-          <div id="viewsList" class="list"></div>
           <div class="button-row">
             <button id="loadViewBtn" class="secondary">Load selected</button>
             <button id="deleteViewBtn" class="danger">Delete</button>
           </div>
+          <div id="viewsList" class="list"></div>
         </div>
       </section>
 
