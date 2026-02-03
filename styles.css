@@ -203,17 +203,34 @@ button.danger {
 
 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 0;
+  background: #e5e7eb;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 16px;
 }
 
 .tab {
-  background: #f3f4f6;
+  flex: 1;
+  background: transparent;
   color: var(--muted);
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tab:hover {
+  background: #d1d5db;
+  color: var(--text);
 }
 
 .tab.active {
-  background: #e0e7ff;
-  color: #1e3a8a;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .tab-content {
