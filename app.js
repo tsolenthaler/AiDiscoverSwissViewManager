@@ -1,4 +1,6 @@
-const SETTINGS_KEY = "aiviewmanager.settings";
+const CONFIGS_KEY = "aiviewmanager.configs";
+const CURRENT_CONFIG_KEY = "aiviewmanager.current_config";
+
 const DEFAULT_SETTINGS = {
   apiKey: "",
   project: "",
@@ -155,12 +157,20 @@ function getBaseUrl() {
 }
 
 function loadSettings() {
-  const raw = localStorage.getItem(SETTINGS_KEY);
-  state.settings = raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS };
+  const configs = localStorage.getItem(CONFIGS_KEY);
+  const configsObj = configs ? JSON.parse(configs) : {};
+  
+  const currentConfigId = localStorage.getItem(CURRENT_CONFIG_KEY);
+  if (currentConfigId && configsObj[currentConfigId]) {
+    state.settings = { ...DEFAULT_SETTINGS, ...configsObj[currentConfigId] };
+  } else {
+    state.settings = { ...DEFAULT_SETTINGS };
+  }
 }
 
 function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+  // Settings werden in settings.js verwaltet
+  // Diese Funktion bleibt zur Kompatibilität, tut aber nichts
 }
 
 async function apiRequest(path, options = {}) {

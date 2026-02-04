@@ -337,6 +337,17 @@ button.secondary:hover {
   background: #c7d2fe;
 }
 
+button.tertiary {
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+button.tertiary:hover {
+  background: var(--primary-dark);
+}
+
 button.ghost {
   background: transparent;
   color: var(--primary);
@@ -605,16 +616,120 @@ button.danger {
   }
 }
 
-@media (max-width: 1200px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .panel.wide {
-    grid-column: span 1;
-  }
-
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
+/* Configuration Manager */
+.config-manager {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
 }
+
+.config-list-section {
+  border-right: 1px solid var(--border);
+  padding-right: 20px;
+}
+
+.config-list-section h3 {
+  margin-top: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.config-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.config-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.config-item:hover {
+  background: #f0f4f8;
+  border-color: var(--primary);
+}
+
+.config-item.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.config-item.active .config-name,
+.config-item.active .config-info {
+  color: white;
+}
+
+.config-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.config-info {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.config-item.active .config-info {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.config-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.config-buttons button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.config-item.active .config-buttons button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.config-item.active .config-buttons button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.config-form-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.config-form-section h3 {
+  margin: 0 0 16px 0;
+  color: var(--text);
+}
+
+#newConfigBtn {
+  margin-top: 8px;
+}
+
+@media (max-width: 1200px) {
+  .config-manager {
+    grid-template-columns: 1fr;
+  }
+
+  .config-list-section {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+
