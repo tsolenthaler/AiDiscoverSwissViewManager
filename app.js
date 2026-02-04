@@ -24,10 +24,6 @@ const state = {
     results: {},
     openaiRequest: {},
   },
-  chat: {
-    messages: [],
-    lastAssistantMessage: "",
-  },
 };
 
 const elements = {
@@ -60,10 +56,6 @@ const elements = {
   resultsJson: document.getElementById("resultsJson"),
   copyResponseBtn: document.getElementById("copyResponseBtn"),
   editorViewTitle: document.getElementById("editorViewTitle"),
-  chatLog: document.getElementById("chatLog"),
-  chatForm: document.getElementById("chatForm"),
-  chatMessage: document.getElementById("chatMessage"),
-  applyChatDraftBtn: document.getElementById("applyChatDraftBtn"),
   loadingOverlay: document.getElementById("loadingOverlay"),
 };
 
@@ -560,17 +552,6 @@ function setResponseJson(target, data) {
   target.textContent = data ? JSON.stringify(data, null, 2) : "";
 }
 
-function renderChat() {
-  elements.chatLog.innerHTML = "";
-  state.chat.messages.forEach((message) => {
-    const bubble = document.createElement("div");
-    bubble.className = `chat-message ${message.role === "user" ? "user" : "bot"}`;
-    bubble.textContent = message.content;
-    elements.chatLog.appendChild(bubble);
-  });
-  elements.chatLog.scrollTop = elements.chatLog.scrollHeight;
-}
-
 function switchTab(tabName) {
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
   tabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
@@ -749,182 +730,6 @@ function extractJsonFromText(text) {
   return null;
 }
 
-async function sendChatMessage(message) {
-  if (!state.settings.openaiKey) {
-    updateSettingsStatus("Please save OpenAI API key first.", true);
-    return;
-  }
-  
-  // Get current view context if available
-  const currentViewContext = state.selectedViewId && state.views.length > 0
-    ? state.views.find((v) => v.id === state.selectedViewId)
-    : null;
-  
-  const currentViewJson = currentViewContext 
-    ? JSON.stringify(currentViewContext, null, 2)
-    : null;
-  
-  const viewContextInfo = currentViewContext
-    ? `\n\nCURRENT VIEW CONTEXT:\nView ID: ${currentViewContext.id}\nView Name: ${currentViewContext.name}\nView Data:\n${currentViewJson}`
-    : "\n\nNo view currently selected. User is creating a new view from scratch.";
-  
-  const systemPrompt = `You are AIViewManager, a helpful assistant for creating and editing discover.swiss SearchViewRequest configurations.
-
-Your role:
-- Guide users through building views for searching tourism/hospitality data
-- Provide suggestions based on discover.swiss API capabilities
-- Generate valid JSON when requested
-- Help optimize search strategies
-- ${currentViewContext ? `Assist in modifying the currently selected view (${currentViewContext.name})` : "Help create new views"}
-
-discover.swiss API Documentation:
-- Environments: Test (api.discover.swiss/test/info/v2), Production (api.discover.swiss/info/v2)
-- Main endpoint: /search/views for CRUD operations on views
-
-SearchViewRequest Structure:
-{
-  "name": "string",
-  "description": "string", 
-  "scheduleStrategy": "EveryHour | Every6Hours | Every12Hours | Daily | Weekly",
-  "searchRequest": {
-    "project": ["project-name"],
-    "combinedTypeTree": ["Thing|Place|LocalBusiness"],  // OR use categoryTree
-    "categoryTree": ["category-name"],                   // Use ONE of combinedTypeTree OR categoryTree
-    "facets": [
-      {
-        "name": "facet-name",
-        "responseName": "displayName",
-        "responseNames": { "de": "Anzeigename", "en": "Display Name" },
-        "filterValues": ["value1", "value2"],
-        "additionalType": ["type1"],
-        "orderBy": "field",
-        "orderDirection": "asc | desc",
-        "count": 10,
-        "excludeRedundant": true  // Set for categoryTree/combinedTypeTree facets
-      }
-    ]
-  }
-}
-
-Filter Types:
-- combinedTypeTree: Schema.org combined type hierarchy
-- categoryTree: Tourism category hierarchy
-- filters, award, campaignTag, allTag, category, amenityFeature, starRatingName, addressLocality, addressPostalCode
-
-Facet Names (common):
-- categoryTree: Tourism categories (hotels, restaurants, attractions, etc.)
-- combinedTypeTree: Schema.org types (LocalBusiness, Restaurant, etc.)
-- amenityFeature: Accommodation amenities (WiFi, pool, gym, etc.)
-- starRatingName: Star ratings
-- addressLocality: Geographic locations
-- award, campaignTag: Special promotions/awards
-
-Best Practices:
-- Use facets to enable filtering in search results
-- Set responseNames for multi-language support
-- Use excludeRedundant=true for tree-based facets to avoid duplicate entries
-- orderBy and orderDirection help present facets in logical order
-- count limits the number of returned facet values
-
-When creating views:
-1. Ask about data scope (accommodations, restaurants, attractions, etc.)
-2. Determine needed facets for filtering
-3. Suggest appropriate schedule strategy
-4. Provide complete JSON structure
-5. Guide on filters and facet configuration
-
-${viewContextInfo}
-
-Respond in JSON when user asks "create", "generate", "suggest", "update", or "modify" a view.
-Keep technical details concise but complete.`;
-
-  const messages = [
-    { role: "system", content: systemPrompt },
-    ...state.chat.messages,
-    { role: "user", content: message },
-  ];
-
-  state.chat.messages.push({ role: "user", content: message });
-  renderChat();
-
-  try {
-    const requestBody = {
-      model: state.settings.openaiModel || "gpt-4o-mini",
-      messages,
-      temperature: 0.4,
-    };
-    
-    // Store the OpenAI request for inspection
-    state.responses.openaiRequest = requestBody;
-    
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${state.settings.openaiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw data;
-    }
-
-    const assistantMessage = data.choices?.[0]?.message?.content || "";
-    state.chat.messages.push({ role: "assistant", content: assistantMessage });
-    state.chat.lastAssistantMessage = assistantMessage;
-    renderChat();
-  } catch (error) {
-    state.chat.messages.push({ role: "assistant", content: `Error: ${JSON.stringify(error)}` });
-    renderChat();
-  }
-}
-
-function applyChatDraft() {
-  if (!state.chat.lastAssistantMessage) return;
-  const json = extractJsonFromText(state.chat.lastAssistantMessage);
-  if (!json) {
-    updateSettingsStatus("No JSON found in the last response.", true);
-    return;
-  }
-
-  state.draft.name = json.name || state.draft.name;
-  state.draft.description = json.description || state.draft.description;
-  state.draft.scheduleStrategy = json.scheduleStrategy || state.draft.scheduleStrategy;
-  
-  const searchRequest = json.searchRequest || {};
-  state.draft.filters = [];
-  
-  if (searchRequest.combinedTypeTree?.length) {
-    state.draft.filters.push({
-      type: "combinedTypeTree",
-      values: searchRequest.combinedTypeTree,
-    });
-  }
-  
-  if (searchRequest.categoryTree?.length) {
-    state.draft.filters.push({
-      type: "categoryTree",
-      values: searchRequest.categoryTree,
-    });
-  }
-  
-  if (Array.isArray(searchRequest.facets)) {
-    state.draft.facets = searchRequest.facets.map((facet) => ({
-      name: facet.name,
-      responseName: facet.responseName,
-      responseNames: facet.responseNames,
-      filterValues: facet.filterValues || [],
-      additionalType: facet.additionalType || [],
-      orderBy: facet.orderBy,
-      orderDirection: facet.orderDirection,
-      count: facet.count,
-    }));
-  }
-  renderDraft();
-}
-
 function wireEvents() {
   elements.settingsForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -993,16 +798,6 @@ function wireEvents() {
     copyToClipboard(elements.responseJson.textContent)
   );
 
-  elements.chatForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const message = elements.chatMessage.value.trim();
-    if (!message) return;
-    elements.chatMessage.value = "";
-    sendChatMessage(message);
-  });
-
-  elements.applyChatDraftBtn.addEventListener("click", applyChatDraft);
-
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => switchTab(tab.dataset.tab));
   });
@@ -1013,6 +808,61 @@ function init() {
   renderSettings();
   renderDraft();
   wireEvents();
+  
+  // Check if there's a draft from the chatbot
+  const chatbotDraft = localStorage.getItem("aiviewmanager.chatbot.draft");
+  if (chatbotDraft) {
+    try {
+      const json = JSON.parse(chatbotDraft);
+      state.draft.name = json.name || state.draft.name;
+      state.draft.description = json.description || state.draft.description;
+      state.draft.scheduleStrategy = json.scheduleStrategy || state.draft.scheduleStrategy;
+      
+      const searchRequest = json.searchRequest || {};
+      state.draft.filters = [];
+      
+      if (searchRequest.combinedTypeTree?.length) {
+        state.draft.filters.push({
+          type: "combinedTypeTree",
+          values: searchRequest.combinedTypeTree,
+        });
+      }
+      
+      if (searchRequest.categoryTree?.length) {
+        state.draft.filters.push({
+          type: "categoryTree",
+          values: searchRequest.categoryTree,
+        });
+      }
+      
+      if (Array.isArray(searchRequest.facets)) {
+        state.draft.facets = searchRequest.facets.map((facet) => ({
+          name: facet.name,
+          responseName: facet.responseName,
+          responseNames: facet.responseNames,
+          filterValues: facet.filterValues || [],
+          additionalType: facet.additionalType || [],
+          orderBy: facet.orderBy,
+          orderDirection: facet.orderDirection,
+          count: facet.count,
+        }));
+      }
+      renderDraft();
+      localStorage.removeItem("aiviewmanager.chatbot.draft");
+      updateSettingsStatus("Draft vom Chatbot geladen!", false);
+    } catch (error) {
+      console.error("Error loading chatbot draft:", error);
+    }
+  }
+  
+  // Save state for chatbot context
+  window.addEventListener("beforeunload", () => {
+    const stateToSave = {
+      selectedViewId: state.selectedViewId,
+      views: state.views,
+    };
+    localStorage.setItem("aiviewmanager.state", JSON.stringify(stateToSave));
+  });
 
   document.querySelectorAll("details.panel").forEach((panel) => {
     panel.addEventListener("toggle", () => {

@@ -42,6 +42,23 @@ body {
   gap: 12px;
 }
 
+.chatbot-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.chatbot-link:hover {
+  background: var(--primary-dark);
+}
+
 .layout {
   display: flex;
   flex-wrap: wrap;
@@ -100,6 +117,42 @@ body {
 
 .panel[open] > .panel-summary {
   border-bottom: 1px solid var(--border);
+}
+
+.chatbot-notice {
+  padding: 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.chatbot-notice h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+}
+
+.chatbot-notice p {
+  margin: 0 0 16px 0;
+  opacity: 0.95;
+}
+
+.chatbot-notice .button {
+  display: inline-block;
+  padding: 12px 24px;
+  background: white;
+  color: #764ba2;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+
+.chatbot-notice .button:hover {
+  transform: translateY(-2px);
+}
+
+.panel-content {
+  padding: 0;
 }
 
 .panel-summary h2 {

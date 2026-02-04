@@ -12,7 +12,9 @@
         <h1>AIViewManager</h1>
         <p class="subtitle">Discover.swiss Views Manager Chatbot</p>
       </div>
-      <div class="header-actions"></div>
+      <div class="header-actions">
+        <a href="chatbot.html" class="chatbot-link">💬 Zum Chatbot</a>
+      </div>
     </header>
 
     <main class="layout">
@@ -161,17 +163,13 @@
         </div>
       </details>
 
-      <details class="panel" id="chatbotPanel">
-        <summary class="panel-summary"><h2>Chatbot</h2></summary>
-        <div id="chatLog" class="chat-log"></div>
-        <form id="chatForm" class="chat-input">
-          <input id="chatMessage" type="text" placeholder="Ask the AIViewManager bot..." />
-          <button type="submit">Send</button>
-        </form>
-        <div class="button-row">
-          <button id="applyChatDraftBtn" class="secondary">Apply JSON from last reply</button>
+      <div class="panel chatbot-notice">
+        <div class="panel-content">
+          <h2>💬 Chatbot</h2>
+          <p>Der AI-Chatbot wurde auf eine eigene Seite ausgelagert.</p>
+          <a href="chatbot.html" class="button">Zum Chatbot wechseln →</a>
         </div>
-      </details>
+      </div>
     </main>
 
     <footer class="footer">
