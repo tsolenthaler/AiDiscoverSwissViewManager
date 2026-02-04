@@ -533,6 +533,14 @@ function renderFacets() {
           <input data-field="name" value="${facet.name || ""}" />
         </label>
         <label>
+          <span>Scope</span>
+          <select data-field="scope">
+            <option value="all" ${facet.scope === "all" ? "selected" : ""}>all</option>
+            <option value="parent" ${facet.scope === "parent" ? "selected" : ""}>parent</option>
+            <option value="current" ${!facet.scope || facet.scope === "current" ? "selected" : ""}>current</option>
+          </select>
+        </label>
+        <label>
           <span>Response Names DE</span>
           <input data-field="responseNames.de" value="${facet.responseNames?.de || ""}" />
         </label>
@@ -610,6 +618,8 @@ function updateFacetField(index, field, value) {
     facet.additionalType = value.split(",").map((v) => v.trim()).filter(Boolean);
   } else if (field === "count") {
     facet.count = value ? Number(value) : undefined;
+  } else if (field === "scope") {
+    facet.scope = value || "current";
   } else if (field?.startsWith("responseNames.")) {
     const key = field.split(".")[1];
     facet.responseNames = facet.responseNames || {};
@@ -633,6 +643,7 @@ function buildRequestBody() {
           orderBy: facet.orderBy || undefined,
           orderDirection: facet.orderDirection || undefined,
           count: facet.count || undefined,
+          scope: facet.scope || undefined,
         };
 
         if (facet.name === "categoryTree" || facet.name === "combinedTypeTree") {
@@ -748,6 +759,7 @@ function applyViewToDraft(view) {
     orderBy: facet.orderBy,
     orderDirection: facet.orderDirection,
     count: facet.count,
+    scope: facet.scope || "current",
   }));
   renderDraft();
 }
@@ -891,6 +903,7 @@ function wireEvents() {
       orderBy: "",
       orderDirection: "",
       count: undefined,
+      scope: "current",
     });
     renderFacets();
   });
@@ -967,6 +980,7 @@ function init() {
           orderBy: facet.orderBy,
           orderDirection: facet.orderDirection,
           count: facet.count,
+          scope: facet.scope || "current",
         }));
       }
       renderDraft();
