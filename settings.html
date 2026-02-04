@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - AIViewManager</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Settings</h1>
+        <p class="subtitle">AIViewManager Configuration</p>
+      </div>
+      <div class="header-actions">
+        <a href="index.html" class="back-link">← Zurück zum Manager</a>
+      </div>
+    </header>
+
+    <main class="layout">
+      <div class="panel">
+        <form id="settingsForm" class="stack">
+          <button type="submit">Save settings</button>
+          
+          <fieldset>
+            <legend>discover.swiss Configuration</legend>
+            <label class="select">
+              <span>Environment</span>
+              <select id="envSelect">
+                <option value="test">Test</option>
+                <option value="prod">Production</option>
+              </select>
+            </label>
+            <label>
+              <span>discover.swiss API Key</span>
+              <input id="dsApiKey" type="password" placeholder="Ocp-Apim-Subscription-Key" />
+            </label>
+            <label>
+              <span>discover.swiss Project Name</span>
+              <input id="dsProject" type="text" placeholder="tso-test" />
+            </label>
+          </fieldset>
+          
+          <details class="settings-section">
+            <summary>OpenAI Settings (optional)</summary>
+            <div class="settings-section-content">
+              <label>
+                <span>OpenAI API Key</span>
+                <input id="openaiKey" type="password" placeholder="sk-..." />
+              </label>
+              <label>
+                <span>OpenAI Model</span>
+                <input id="openaiModel" type="text" placeholder="gpt-4o-mini" />
+              </label>
+            </div>
+          </details>
+
+          <button type="submit">Save settings</button>
+        </form>
+        <div id="settingsStatus" class="status"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Info</h2>
+        <p>
+          Diese Einstellungen werden lokal im Browser gespeichert (LocalStorage).
+          Es erfolgt keine Server-seitige Speicherung.
+        </p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>Offline storage via LocalStorage. No server-side storage.</span>
+    </footer>
+
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <script src="settings.js"></script>
+  </body>
+</html>

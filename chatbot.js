@@ -20,13 +20,6 @@ const state = {
 };
 
 const elements = {
-  envSelect: document.getElementById("envSelect"),
-  settingsForm: document.getElementById("settingsForm"),
-  dsApiKey: document.getElementById("dsApiKey"),
-  dsProject: document.getElementById("dsProject"),
-  openaiKey: document.getElementById("openaiKey"),
-  openaiModel: document.getElementById("openaiModel"),
-  settingsStatus: document.getElementById("settingsStatus"),
   chatLog: document.getElementById("chatLog"),
   chatForm: document.getElementById("chatForm"),
   chatMessage: document.getElementById("chatMessage"),
@@ -83,19 +76,6 @@ function loadChatHistory() {
 
 function saveChatHistory() {
   localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(state.chat));
-}
-
-function renderSettings() {
-  elements.dsApiKey.value = state.settings.apiKey;
-  elements.dsProject.value = state.settings.project;
-  elements.openaiKey.value = state.settings.openaiKey;
-  elements.openaiModel.value = state.settings.openaiModel;
-  elements.envSelect.value = state.settings.env;
-}
-
-function updateSettingsStatus(message, isError = false) {
-  elements.settingsStatus.textContent = message;
-  elements.settingsStatus.style.color = isError ? "var(--danger)" : "var(--primary)";
 }
 
 function renderContext() {
@@ -337,17 +317,6 @@ function clearChat() {
 }
 
 function wireEvents() {
-  elements.settingsForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    state.settings.apiKey = elements.dsApiKey.value.trim();
-    state.settings.project = elements.dsProject.value.trim();
-    state.settings.openaiKey = elements.openaiKey.value.trim();
-    state.settings.openaiModel = elements.openaiModel.value.trim() || "gpt-4o-mini";
-    state.settings.env = elements.envSelect.value;
-    saveSettings();
-    updateSettingsStatus("Settings gespeichert", false);
-  });
-
   elements.chatForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const message = elements.chatMessage.value.trim();

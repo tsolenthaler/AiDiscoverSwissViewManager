@@ -27,14 +27,7 @@ const state = {
 };
 
 const elements = {
-  envSelect: document.getElementById("envSelect"),
   refreshViewsBtn: document.getElementById("refreshViewsBtn"),
-  settingsForm: document.getElementById("settingsForm"),
-  dsApiKey: document.getElementById("dsApiKey"),
-  dsProject: document.getElementById("dsProject"),
-  openaiKey: document.getElementById("openaiKey"),
-  openaiModel: document.getElementById("openaiModel"),
-  settingsStatus: document.getElementById("settingsStatus"),
   viewsList: document.getElementById("viewsList"),
   loadViewBtn: document.getElementById("loadViewBtn"),
   deleteViewBtn: document.getElementById("deleteViewBtn"),
@@ -168,19 +161,6 @@ function loadSettings() {
 
 function saveSettings() {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
-}
-
-function renderSettings() {
-  elements.dsApiKey.value = state.settings.apiKey;
-  elements.dsProject.value = state.settings.project;
-  elements.openaiKey.value = state.settings.openaiKey;
-  elements.openaiModel.value = state.settings.openaiModel;
-  elements.envSelect.value = state.settings.env;
-}
-
-function updateSettingsStatus(message, isError = false) {
-  elements.settingsStatus.textContent = message;
-  elements.settingsStatus.style.color = isError ? "#dc2626" : "#6b7280";
 }
 
 async function apiRequest(path, options = {}) {
@@ -731,18 +711,6 @@ function extractJsonFromText(text) {
 }
 
 function wireEvents() {
-  elements.settingsForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    state.settings.apiKey = elements.dsApiKey.value.trim();
-    state.settings.project = elements.dsProject.value.trim();
-    state.settings.openaiKey = elements.openaiKey.value.trim();
-    state.settings.openaiModel = elements.openaiModel.value.trim() || "gpt-4o-mini";
-    state.settings.env = elements.envSelect.value;
-    saveSettings();
-    updateSettingsStatus("Settings saved.");
-    loadViews();
-  });
-
   elements.refreshViewsBtn.addEventListener("click", loadViews);
   elements.loadViewBtn.addEventListener("click", loadSelectedView);
   elements.deleteViewBtn.addEventListener("click", deleteView);

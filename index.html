@@ -13,48 +13,12 @@
         <p class="subtitle">Discover.swiss Views Manager Chatbot</p>
       </div>
       <div class="header-actions">
+        <a href="settings.html" class="settings-link">⚙️ Settings</a>
         <a href="chatbot.html" class="chatbot-link">💬 Zum Chatbot</a>
       </div>
     </header>
 
     <main class="layout">
-      <details class="panel">
-        <summary class="panel-summary"><h2>Settings</h2></summary>
-        <form id="settingsForm" class="stack">
-          <button type="submit">Save settings</button>
-          <label class="select">
-            <span>Environment</span>
-            <select id="envSelect">
-              <option value="test">Test</option>
-              <option value="prod">Production</option>
-            </select>
-          </label>
-          <label>
-            <span>discover.swiss API Key</span>
-            <input id="dsApiKey" type="password" placeholder="Ocp-Apim-Subscription-Key" />
-          </label>
-          <label>
-            <span>discover.swiss Project Name</span>
-            <input id="dsProject" type="text" placeholder="tso-test" />
-          </label>
-          
-          <details class="settings-section">
-            <summary>OpenAI Settings (optional)</summary>
-            <div class="settings-section-content">
-              <label>
-                <span>OpenAI API Key</span>
-                <input id="openaiKey" type="password" placeholder="sk-..." />
-              </label>
-              <label>
-                <span>OpenAI Model</span>
-                <input id="openaiModel" type="text" placeholder="gpt-4o-mini" />
-              </label>
-            </div>
-          </details>
-        </form>
-        <div id="settingsStatus" class="status"></div>
-      </details>
-
       <details class="panel">
         <summary class="panel-summary"><h2>Views</h2></summary>
         <div class="stack">
