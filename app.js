@@ -410,9 +410,10 @@ function renderFacets() {
   state.draft.facets.forEach((facet, index) => {
     const card = document.createElement("details");
     card.className = "facet-card";
+    const headerTitle = facet.name ? `Facet ${facet.name}` : `Facet ${index + 1}`;
     card.innerHTML = `
       <summary class="card-summary">
-        <strong>Facet ${index + 1}</strong>
+        <strong>${headerTitle}</strong>
         <div class="button-row">
           <button class="secondary" data-action="up">Up</button>
           <button class="secondary" data-action="down">Down</button>
