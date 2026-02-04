@@ -160,6 +160,32 @@ function loadSettings() {
   const configs = localStorage.getItem(CONFIGS_KEY);
   const configsObj = configs ? JSON.parse(configs) : {};
   
+  // Migrate old settings if they exist and no configs are present
+  if (Object.keys(configsObj).length === 0) {
+    const oldSettings = localStorage.getItem("aiviewmanager.settings");
+    if (oldSettings) {
+      try {
+        const oldSettingsObj = JSON.parse(oldSettings);
+        if (oldSettingsObj.apiKey || oldSettingsObj.project) {
+          const migratedId = "config_migrated";
+          configsObj[migratedId] = {
+            name: "Default Configuration",
+            apiKey: oldSettingsObj.apiKey || "",
+            project: oldSettingsObj.project || "",
+            openaiKey: oldSettingsObj.openaiKey || "",
+            openaiModel: oldSettingsObj.openaiModel || "gpt-4o-mini",
+            env: oldSettingsObj.env || "test",
+          };
+          localStorage.setItem(CONFIGS_KEY, JSON.stringify(configsObj));
+          localStorage.setItem(CURRENT_CONFIG_KEY, migratedId);
+          localStorage.removeItem("aiviewmanager.settings");
+        }
+      } catch (e) {
+        console.error("Migration failed:", e);
+      }
+    }
+  }
+  
   const currentConfigId = localStorage.getItem(CURRENT_CONFIG_KEY);
   if (currentConfigId && configsObj[currentConfigId]) {
     state.settings = { ...DEFAULT_SETTINGS, ...configsObj[currentConfigId] };
@@ -791,7 +817,6 @@ function wireEvents() {
 
 function init() {
   loadSettings();
-  renderSettings();
   renderDraft();
   
   // Initialize tabs and tabContents before wireEvents

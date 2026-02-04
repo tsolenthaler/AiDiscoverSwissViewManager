@@ -41,6 +41,32 @@ function hideLoading() {
 function loadAllConfigs() {
   const raw = localStorage.getItem(CONFIGS_KEY);
   state.configs = raw ? JSON.parse(raw) : {};
+  
+  // Migrate old settings if they exist and no configs are present
+  if (Object.keys(state.configs).length === 0) {
+    const oldSettings = localStorage.getItem("aiviewmanager.settings");
+    if (oldSettings) {
+      try {
+        const oldSettingsObj = JSON.parse(oldSettings);
+        if (oldSettingsObj.apiKey || oldSettingsObj.project) {
+          const migratedId = "config_migrated";
+          state.configs[migratedId] = {
+            name: "Default Configuration",
+            apiKey: oldSettingsObj.apiKey || "",
+            project: oldSettingsObj.project || "",
+            openaiKey: oldSettingsObj.openaiKey || "",
+            openaiModel: oldSettingsObj.openaiModel || "gpt-4o-mini",
+            env: oldSettingsObj.env || "test",
+          };
+          saveAllConfigs();
+          localStorage.setItem(CURRENT_CONFIG_KEY, migratedId);
+          localStorage.removeItem("aiviewmanager.settings");
+        }
+      } catch (e) {
+        console.error("Migration failed:", e);
+      }
+    }
+  }
 }
 
 function loadCurrentConfig() {
