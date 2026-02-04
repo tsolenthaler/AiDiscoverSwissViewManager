@@ -59,8 +59,8 @@ const elements = {
   loadingOverlay: document.getElementById("loadingOverlay"),
 };
 
-const tabs = document.querySelectorAll(".tab");
-const tabContents = document.querySelectorAll(".tab-content");
+let tabs = [];
+let tabContents = [];
 
 function showLoading() {
   elements.loadingOverlay.classList.add("active");
@@ -804,6 +804,10 @@ function wireEvents() {
 }
 
 function init() {
+  // Initialize tabs and tabContents
+  tabs = document.querySelectorAll(".tab");
+  tabContents = document.querySelectorAll(".tab-content");
+  
   loadSettings();
   renderSettings();
   renderDraft();
