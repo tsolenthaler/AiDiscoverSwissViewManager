@@ -316,18 +316,19 @@ function renderFilters() {
   }
 
   state.draft.filters.forEach((filter, index) => {
-    const card = document.createElement("div");
+    const card = document.createElement("details");
     card.className = "filter-card";
+    const headerTitle = filter.type ? `Filter ${filter.type}` : `Filter ${index + 1}`;
     card.innerHTML = `
-      <header>
-        <h4>Filter ${index + 1}</h4>
+      <summary class="card-summary">
+        <h4>${headerTitle}</h4>
         <div class="button-row">
           <button class="secondary" data-action="up">Up</button>
           <button class="secondary" data-action="down">Down</button>
           <button class="danger" data-action="remove">Remove</button>
         </div>
-      </header>
-      <div class="grid-2">
+      </summary>
+      <div class="card-body grid-2">
         <label>
           <span>Filter type</span>
           <select data-field="type">
@@ -352,7 +353,8 @@ function renderFilters() {
     `;
 
     card.querySelectorAll("button").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
         const action = button.dataset.action;
         if (action === "remove") {
           state.draft.filters.splice(index, 1);
@@ -406,18 +408,18 @@ function renderFacets() {
   }
 
   state.draft.facets.forEach((facet, index) => {
-    const card = document.createElement("div");
+    const card = document.createElement("details");
     card.className = "facet-card";
     card.innerHTML = `
-      <header>
+      <summary class="card-summary">
         <strong>Facet ${index + 1}</strong>
         <div class="button-row">
           <button class="secondary" data-action="up">Up</button>
           <button class="secondary" data-action="down">Down</button>
           <button class="danger" data-action="remove">Remove</button>
         </div>
-      </header>
-      <div class="grid-2">
+      </summary>
+      <div class="card-body grid-2">
         <label>
           <span>Name</span>
           <input data-field="name" value="${facet.name || ""}" />
@@ -458,7 +460,8 @@ function renderFacets() {
     `;
 
     card.querySelectorAll("button").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
         const action = button.dataset.action;
         if (action === "remove") {
           state.draft.facets.splice(index, 1);

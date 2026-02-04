@@ -532,17 +532,20 @@ button.danger {
 .filter-card {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px;
   background: #fafbfc;
 }
 
-.filter-card header {
+.filter-card .card-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.filter-card .card-summary::-webkit-details-marker {
+  display: none;
 }
 
 .filter-card h4 {
@@ -550,18 +553,33 @@ button.danger {
   font-size: 0.95rem;
 }
 
+.filter-card .card-body {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+
 .facet-card {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px;
   background: #f8fafc;
 }
 
-.facet-card header {
+.facet-card .card-summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.facet-card .card-summary::-webkit-details-marker {
+  display: none;
+}
+
+.facet-card .card-body {
+  padding: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .footer {
