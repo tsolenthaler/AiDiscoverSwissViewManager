@@ -110,11 +110,15 @@
           <button id="previewResultsBtn" class="secondary">Load results</button>
         </div>
         <div class="tabs" id="previewTabs">
-          <button class="tab active" data-tab="live">Preview</button>
+          <button class="tab active" data-tab="live">Preview Objects</button>
+          <button class="tab" data-tab="facets">Preview Facets Options</button>
           <button class="tab" data-tab="results">Response</button>
         </div>
         <div id="tab-live" class="tab-content active">
           <div id="liveContainer"></div>
+        </div>
+        <div id="tab-facets" class="tab-content">
+          <div id="facetsContainer"></div>
         </div>
         <div id="tab-results" class="tab-content">
           <pre id="resultsJson" class="code-block"></pre>
