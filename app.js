@@ -236,6 +236,16 @@ function renderFacetsPreview() {
     if (options.length === 0) {
       optionsCell.textContent = "-";
     } else {
+      const details = document.createElement("details");
+      const summary = document.createElement("summary");
+      summary.textContent = `${options.length} options`;
+      summary.style.cursor = "pointer";
+      summary.style.fontWeight = "600";
+      summary.style.color = "var(--primary)";
+      details.appendChild(summary);
+      
+      const optionsDiv = document.createElement("div");
+      optionsDiv.style.marginTop = "8px";
       const optionsList = options
         .map((option) => {
           if (option && typeof option === "object") {
@@ -246,7 +256,10 @@ function renderFacetsPreview() {
           return `${String(option)} - -`;
         })
         .join("<br>");
-      optionsCell.innerHTML = optionsList;
+      optionsDiv.innerHTML = optionsList;
+      details.appendChild(optionsDiv);
+      
+      optionsCell.appendChild(details);
     }
     optionsCell.style.padding = "10px";
     optionsCell.style.verticalAlign = "top";
