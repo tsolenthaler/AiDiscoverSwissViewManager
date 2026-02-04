@@ -572,6 +572,10 @@ function renderFacets() {
           <span>Count</span>
           <input data-field="count" type="number" min="1" value="${facet.count || ""}" />
         </label>
+        <label class="checkbox-label">
+          <input data-field="excludeRedundant" type="checkbox" ${facet.excludeRedundant ? "checked" : ""} />
+          <span>Exclude Redundant</span>
+        </label>
       </div>
     `;
 
@@ -600,7 +604,8 @@ function renderFacets() {
     card.querySelectorAll("input, textarea, select").forEach((input) => {
       input.addEventListener("input", () => {
         const field = input.dataset.field;
-        updateFacetField(index, field, input.value);
+        const value = input.type === "checkbox" ? input.checked : input.value;
+        updateFacetField(index, field, value);
       });
     });
 
@@ -620,6 +625,8 @@ function updateFacetField(index, field, value) {
     facet.count = value ? Number(value) : undefined;
   } else if (field === "scope") {
     facet.scope = value || "current";
+  } else if (field === "excludeRedundant") {
+    facet.excludeRedundant = value;
   } else if (field?.startsWith("responseNames.")) {
     const key = field.split(".")[1];
     facet.responseNames = facet.responseNames || {};
@@ -644,11 +651,8 @@ function buildRequestBody() {
           orderDirection: facet.orderDirection || undefined,
           count: facet.count || undefined,
           scope: facet.scope || undefined,
+          excludeRedundant: facet.excludeRedundant || undefined,
         };
-
-        if (facet.name === "categoryTree" || facet.name === "combinedTypeTree") {
-          mapped.excludeRedundant = true;
-        }
         return mapped;
       })
       .filter((facet) => facet.name),
@@ -760,6 +764,7 @@ function applyViewToDraft(view) {
     orderDirection: facet.orderDirection,
     count: facet.count,
     scope: facet.scope || "current",
+    excludeRedundant: facet.excludeRedundant || false,
   }));
   renderDraft();
 }
@@ -904,6 +909,7 @@ function wireEvents() {
       orderDirection: "",
       count: undefined,
       scope: "current",
+      excludeRedundant: false,
     });
     renderFacets();
   });
@@ -981,6 +987,7 @@ function init() {
           orderDirection: facet.orderDirection,
           count: facet.count,
           scope: facet.scope || "current",
+          excludeRedundant: facet.excludeRedundant || false,
         }));
       }
       renderDraft();
