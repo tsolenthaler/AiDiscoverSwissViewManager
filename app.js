@@ -788,15 +788,23 @@ function wireEvents() {
   elements.updateViewBtn.addEventListener("click", updateView);
   elements.previewResultsBtn.addEventListener("click", previewResults);
 
-  elements.copyRequestBtn.addEventListener("click", () =>
-    copyToClipboard(elements.requestJson.textContent)
-  );
-  elements.copyOpenaiRequestBtn.addEventListener("click", () =>
-    copyToClipboard(elements.openaiRequestJson.textContent)
-  );
-  elements.copyResponseBtn.addEventListener("click", () =>
-    copyToClipboard(elements.responseJson.textContent)
-  );
+  if (elements.copyRequestBtn) {
+    elements.copyRequestBtn.addEventListener("click", () =>
+      copyToClipboard(elements.requestJson.textContent)
+    );
+  }
+  
+  if (elements.copyOpenaiRequestBtn) {
+    elements.copyOpenaiRequestBtn.addEventListener("click", () =>
+      copyToClipboard(elements.openaiRequestJson.textContent)
+    );
+  }
+  
+  if (elements.copyResponseBtn) {
+    elements.copyResponseBtn.addEventListener("click", () =>
+      copyToClipboard(elements.responseJson.textContent)
+    );
+  }
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => switchTab(tab.dataset.tab));
@@ -804,13 +812,14 @@ function wireEvents() {
 }
 
 function init() {
-  // Initialize tabs and tabContents
-  tabs = document.querySelectorAll(".tab");
-  tabContents = document.querySelectorAll(".tab-content");
-  
   loadSettings();
   renderSettings();
   renderDraft();
+  
+  // Initialize tabs and tabContents before wireEvents
+  tabs = document.querySelectorAll(".tab");
+  tabContents = document.querySelectorAll(".tab-content");
+  
   wireEvents();
   
   // Check if there's a draft from the chatbot
