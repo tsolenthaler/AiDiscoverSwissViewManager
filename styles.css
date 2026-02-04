@@ -59,6 +59,40 @@ body {
   background: var(--primary-dark);
 }
 
+.settings-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.settings-link:hover {
+  background: var(--primary-dark);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
 .layout {
   display: flex;
   flex-wrap: wrap;
