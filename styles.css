@@ -124,10 +124,6 @@ body {
   flex: 1 1 100%;
 }
 
-.panel.wide {
-  flex: 1 1 100%;
-}
-
 .panel-summary {
   cursor: pointer;
   padding: 20px;
