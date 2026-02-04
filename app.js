@@ -714,6 +714,7 @@ async function previewResults() {
     if (resultsPanel) {
       resultsPanel.open = true;
     }
+    switchTab("live");
   } catch (error) {
     setResponseJson(elements.resultsJson, error);
   } finally {

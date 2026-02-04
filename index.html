@@ -107,17 +107,17 @@
       <details class="panel" id="resultsPanel">
         <summary class="panel-summary"><h2>Preview</h2></summary>
         <div class="button-row">
-          <button id="previewResultsBtn" class="secondary">Preview results</button>
+          <button id="previewResultsBtn" class="secondary">Load results</button>
         </div>
         <div class="tabs" id="previewTabs">
-          <button class="tab active" data-tab="results">Results</button>
-          <button class="tab" data-tab="live">Live</button>
+          <button class="tab active" data-tab="live">Preview</button>
+          <button class="tab" data-tab="results">Results</button>
         </div>
-        <div id="tab-results" class="tab-content active">
-          <pre id="resultsJson" class="code-block"></pre>
-        </div>
-        <div id="tab-live" class="tab-content">
+        <div id="tab-live" class="tab-content active">
           <div id="liveContainer"></div>
+        </div>
+        <div id="tab-results" class="tab-content">
+          <pre id="resultsJson" class="code-block"></pre>
         </div>
       </details>
     </main>
