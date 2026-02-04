@@ -150,6 +150,132 @@ function renderLivePreview() {
   liveContainer.appendChild(table);
 }
 
+function renderFacetsPreview() {
+  const facetsContainer = document.getElementById("facetsContainer");
+  if (!facetsContainer) return;
+
+  facetsContainer.innerHTML = "";
+  
+  // Check if results exist
+  const results = state.responses.results;
+  let facets = results?.facets || [];
+  
+  // Convert object to array if necessary
+  if (facets && typeof facets === "object" && !Array.isArray(facets)) {
+    facets = Object.values(facets);
+  }
+  
+  facets = Array.isArray(facets) ? facets : [];
+  
+  if (!facets || facets.length === 0) {
+    facetsContainer.innerHTML = "<div class=\"status\">No facets in response. Load results first.</div>";
+    return;
+  }
+  
+  // Create table for facets display
+  const table = document.createElement("table");
+  table.style.width = "100%";
+  table.style.borderCollapse = "collapse";
+  table.style.marginTop = "8px";
+  
+  // Create header
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  headerRow.style.borderBottom = "2px solid var(--border)";
+  headerRow.style.backgroundColor = "#f3f4f6";
+  
+  ["Facet Name", "Filter Property", "Option Name", "Option Value", "Count"].forEach(header => {
+    const th = document.createElement("th");
+    th.textContent = header;
+    th.style.padding = "10px";
+    th.style.textAlign = "left";
+    th.style.fontWeight = "600";
+    th.style.fontSize = "0.9rem";
+    th.style.wordBreak = "break-word";
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+  
+  // Create body
+  const tbody = document.createElement("tbody");
+  let rowIndex = 0;
+  
+  facets.forEach((facet) => {
+    const facetName = facet.name || "-";
+    const filterPropertyName = facet.filterPropertyName || "-";
+    const options = facet.options || [];
+    
+    if (options.length === 0) {
+      // Show facet with no options
+      const row = document.createElement("tr");
+      row.style.borderBottom = "1px solid var(--border)";
+      if (rowIndex % 2 === 0) {
+        row.style.backgroundColor = "#f9fafb";
+      }
+      
+      const cells = [facetName, filterPropertyName, "-", "-", "-"];
+      cells.forEach((cellValue) => {
+        const cell = document.createElement("td");
+        cell.textContent = cellValue;
+        cell.style.padding = "10px";
+        cell.style.wordBreak = "break-word";
+        row.appendChild(cell);
+      });
+      
+      tbody.appendChild(row);
+      rowIndex++;
+    } else {
+      // Show facet with options
+      options.forEach((option, optionIndex) => {
+        const row = document.createElement("tr");
+        row.style.borderBottom = "1px solid var(--border)";
+        if (rowIndex % 2 === 0) {
+          row.style.backgroundColor = "#f9fafb";
+        }
+        
+        // Facet name (only on first option)
+        const facetNameCell = document.createElement("td");
+        facetNameCell.textContent = optionIndex === 0 ? facetName : "";
+        facetNameCell.style.padding = "10px";
+        facetNameCell.style.fontWeight = optionIndex === 0 ? "600" : "normal";
+        row.appendChild(facetNameCell);
+        
+        // Filter property name (only on first option)
+        const filterPropCell = document.createElement("td");
+        filterPropCell.textContent = optionIndex === 0 ? filterPropertyName : "";
+        filterPropCell.style.padding = "10px";
+        row.appendChild(filterPropCell);
+        
+        // Option name
+        const optionNameCell = document.createElement("td");
+        optionNameCell.textContent = option.name || "-";
+        optionNameCell.style.padding = "10px";
+        row.appendChild(optionNameCell);
+        
+        // Option value
+        const optionValueCell = document.createElement("td");
+        optionValueCell.textContent = option.value || "-";
+        optionValueCell.style.padding = "10px";
+        row.appendChild(optionValueCell);
+        
+        // Count
+        const countCell = document.createElement("td");
+        countCell.textContent = option.count !== undefined ? option.count : "-";
+        countCell.style.padding = "10px";
+        countCell.style.textAlign = "center";
+        row.appendChild(countCell);
+        
+        tbody.appendChild(row);
+        rowIndex++;
+      });
+    }
+  });
+  
+  table.appendChild(tbody);
+  facetsContainer.appendChild(table);
+}
+
 function getBaseUrl() {
   return state.settings.env === "prod"
     ? "https://api.discover.swiss/info/v2"
@@ -573,6 +699,8 @@ function switchTab(tabName) {
   
   if (tabName === "live") {
     renderLivePreview();
+  } else if (tabName === "facets") {
+    renderFacetsPreview();
   }
 }
 
