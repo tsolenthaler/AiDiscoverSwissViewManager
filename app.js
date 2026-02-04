@@ -221,12 +221,14 @@ function renderFacetsPreview() {
     facetNameCell.textContent = facetName;
     facetNameCell.style.padding = "10px";
     facetNameCell.style.fontWeight = "600";
+    facetNameCell.style.verticalAlign = "top";
     row.appendChild(facetNameCell);
     
     // Filter property name
     const filterPropCell = document.createElement("td");
     filterPropCell.textContent = filterPropertyName;
     filterPropCell.style.padding = "10px";
+    filterPropCell.style.verticalAlign = "top";
     row.appendChild(filterPropCell);
     
     // Options (all in one cell)
@@ -247,6 +249,7 @@ function renderFacetsPreview() {
       optionsCell.innerHTML = optionsList;
     }
     optionsCell.style.padding = "10px";
+    optionsCell.style.verticalAlign = "top";
     row.appendChild(optionsCell);
     
     tbody.appendChild(row);
