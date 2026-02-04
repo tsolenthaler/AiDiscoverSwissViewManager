@@ -184,7 +184,7 @@ function renderFacetsPreview() {
   headerRow.style.borderBottom = "2px solid var(--border)";
   headerRow.style.backgroundColor = "#f3f4f6";
   
-  ["Facet Name", "Filter Property", "Option Name", "Option Value", "Count"].forEach(header => {
+  ["Facet Name", "Filter Property", "Options"].forEach(header => {
     const th = document.createElement("th");
     th.textContent = header;
     th.style.padding = "10px";
@@ -204,72 +204,53 @@ function renderFacetsPreview() {
   facets.forEach((facet) => {
     const facetName = facet.name || "-";
     const filterPropertyName = facet.filterPropertyName || "-";
-    const options = facet.options || [];
-    
-    if (options.length === 0) {
-      // Show facet with no options
-      const row = document.createElement("tr");
-      row.style.borderBottom = "1px solid var(--border)";
-      if (rowIndex % 2 === 0) {
-        row.style.backgroundColor = "#f9fafb";
-      }
-      
-      const cells = [facetName, filterPropertyName, "-", "-", "-"];
-      cells.forEach((cellValue) => {
-        const cell = document.createElement("td");
-        cell.textContent = cellValue;
-        cell.style.padding = "10px";
-        cell.style.wordBreak = "break-word";
-        row.appendChild(cell);
-      });
-      
-      tbody.appendChild(row);
-      rowIndex++;
-    } else {
-      // Show facet with options
-      options.forEach((option, optionIndex) => {
-        const row = document.createElement("tr");
-        row.style.borderBottom = "1px solid var(--border)";
-        if (rowIndex % 2 === 0) {
-          row.style.backgroundColor = "#f9fafb";
-        }
-        
-        // Facet name (only on first option)
-        const facetNameCell = document.createElement("td");
-        facetNameCell.textContent = optionIndex === 0 ? facetName : "";
-        facetNameCell.style.padding = "10px";
-        facetNameCell.style.fontWeight = optionIndex === 0 ? "600" : "normal";
-        row.appendChild(facetNameCell);
-        
-        // Filter property name (only on first option)
-        const filterPropCell = document.createElement("td");
-        filterPropCell.textContent = optionIndex === 0 ? filterPropertyName : "";
-        filterPropCell.style.padding = "10px";
-        row.appendChild(filterPropCell);
-        
-        // Option name
-        const optionNameCell = document.createElement("td");
-        optionNameCell.textContent = option.name || "-";
-        optionNameCell.style.padding = "10px";
-        row.appendChild(optionNameCell);
-        
-        // Option value
-        const optionValueCell = document.createElement("td");
-        optionValueCell.textContent = option.value || "-";
-        optionValueCell.style.padding = "10px";
-        row.appendChild(optionValueCell);
-        
-        // Count
-        const countCell = document.createElement("td");
-        countCell.textContent = option.count !== undefined ? option.count : "-";
-        countCell.style.padding = "10px";
-        countCell.style.textAlign = "center";
-        row.appendChild(countCell);
-        
-        tbody.appendChild(row);
-        rowIndex++;
-      });
+    let rawOptions = facet.options ?? facet.values ?? facet.items ?? facet.buckets;
+    if (rawOptions && typeof rawOptions === "object" && !Array.isArray(rawOptions)) {
+      rawOptions = Object.values(rawOptions);
     }
+    const options = Array.isArray(rawOptions) ? rawOptions : [];
+    
+    const row = document.createElement("tr");
+    row.style.borderBottom = "1px solid var(--border)";
+    if (rowIndex % 2 === 0) {
+      row.style.backgroundColor = "#f9fafb";
+    }
+    
+    // Facet name
+    const facetNameCell = document.createElement("td");
+    facetNameCell.textContent = facetName;
+    facetNameCell.style.padding = "10px";
+    facetNameCell.style.fontWeight = "600";
+    row.appendChild(facetNameCell);
+    
+    // Filter property name
+    const filterPropCell = document.createElement("td");
+    filterPropCell.textContent = filterPropertyName;
+    filterPropCell.style.padding = "10px";
+    row.appendChild(filterPropCell);
+    
+    // Options (all in one cell)
+    const optionsCell = document.createElement("td");
+    if (options.length === 0) {
+      optionsCell.textContent = "-";
+    } else {
+      const optionsList = options
+        .map((option) => {
+          if (option && typeof option === "object") {
+            const name = option.name ?? option.value ?? option.key ?? option.label ?? "-";
+            const count = option.count ?? option.docCount ?? option.doc_count ?? "-";
+            return `${name} - ${count}`;
+          }
+          return `${String(option)} - -`;
+        })
+        .join("<br>");
+      optionsCell.innerHTML = optionsList;
+    }
+    optionsCell.style.padding = "10px";
+    row.appendChild(optionsCell);
+    
+    tbody.appendChild(row);
+    rowIndex++;
   });
   
   table.appendChild(tbody);
