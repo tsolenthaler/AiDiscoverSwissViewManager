@@ -1,14 +1,17 @@
 # AIViewManager Web App
 
-AIViewManager is a chatbot-based single-page web app for managing discover.swiss Views. It supports offline credential storage via LocalStorage, view listing, creation/editing, and API response inspection with OpenAI integration.
+AIViewManager is a web app for managing discover.swiss Views. It supports offline credential storage via LocalStorage, view listing, creation/editing, and API response inspection with OpenAI integration.
 
 ## Project Structure
 
 The app is a static GitHub Pages-ready site:
 
-- **index.html**: Layout and UI structure
-- **styles.css**: Styling and layout
-- **app.js**: Application logic (settings, API calls, chatbot, view draft builder)
+- **index.html**: Main view manager page with UI and structure
+- **chatbot.html**: Dedicated chatbot page for AI-assisted view creation
+- **styles.css**: Global styling and layout
+- **chatbot.css**: Chatbot-specific styles
+- **app.js**: Main application logic (settings, API calls, view draft builder)
+- **chatbot.js**: Chatbot-specific logic with OpenAI integration
 
 ## Features
 
@@ -25,11 +28,14 @@ The app is a static GitHub Pages-ready site:
 - **OpenAI Request Tab**: Inspect the exact request payload sent to OpenAI API
 - Copy buttons for both request types for debugging
 
-### AI-Powered View Builder
+### AI-Powered View Builder (Dedicated Chatbot Page)
+- Separate chatbot page for focused AI interaction
 - Chat with OpenAI-powered AIViewManager bot
 - Bot provides guidance based on discover.swiss API documentation
 - Automatic JSON suggestion for view creation
-- One-click application of AI-suggested configurations to draft
+- One-click transfer of AI-suggested configurations to main view manager
+- Context loading from selected views in the main manager
+- Persistent chat history across sessions
 
 ### Credential Management
 - Secure LocalStorage-based credential storage
@@ -52,12 +58,15 @@ Open [index.html](index.html) in a browser (or deploy to GitHub Pages):
    - Select a View and click "Load selected" to edit
    - Use the Draft Editor to modify properties
    - Click "Update view" to save changes
-   - Click "Create view" for new Views
-
-3. **Use the Chatbot**:
-   - Open the Chatbot panel at the bottom
+   - Click "💬 Zum Chatbot" in the header to open the dedicated chatbot page
+   - Configure your OpenAI API key and settings in the chatbot page sidebar
+   - (Optional) Click "Load from View Manager" to import context from a selected view
    - Ask the bot for help creating or configuring Views
    - Example: "Create a view for luxury hotels with categories and amenities"
+   - The bot will provide a JSON suggestion
+   - Click "Apply JSON to View Manager" to transfer the configuration
+   - You'll be redirected back to the main page with the draft pre-populated
+   - Edit and save the View as neededhotels with categories and amenities"
    - The bot will provide a JSON suggestion
    - Click "Apply JSON from last reply" to auto-populate the draft
    - You can then edit and save the View
