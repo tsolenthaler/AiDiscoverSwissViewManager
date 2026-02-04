@@ -159,7 +159,7 @@ function extractJsonFromText(text) {
 
 async function sendChatMessage(message) {
   if (!state.settings.openaiKey) {
-    updateSettingsStatus("Bitte speichern Sie zuerst den OpenAI API Key.", true);
+    alert("Bitte speichern Sie zuerst den OpenAI API Key in den Settings.");
     return;
   }
   
@@ -286,19 +286,19 @@ Keep technical details concise but complete.`;
 
 function applyChatDraft() {
   if (!state.chat.lastAssistantMessage) {
-    updateSettingsStatus("Keine letzte Antwort vorhanden.", true);
+    alert("Keine letzte Antwort vorhanden.");
     return;
   }
   
   const json = extractJsonFromText(state.chat.lastAssistantMessage);
   if (!json) {
-    updateSettingsStatus("Kein JSON in der letzten Antwort gefunden.", true);
+    alert("Kein JSON in der letzten Antwort gefunden.");
     return;
   }
 
   // Store the draft in localStorage for the main app to pick up
   localStorage.setItem("aiviewmanager.chatbot.draft", JSON.stringify(json));
-  updateSettingsStatus("JSON wurde übertragen. Bitte wechseln Sie zum View Manager.", false);
+  alert("JSON wurde übertragen. Bitte wechseln Sie zum View Manager.");
   
   // Optional: Open the main page
   setTimeout(() => {
@@ -310,7 +310,7 @@ function loadContextFromManager() {
   // Try to load the selected view from the main app
   const mainState = localStorage.getItem("aiviewmanager.state");
   if (!mainState) {
-    updateSettingsStatus("Kein View im Manager ausgewählt.", true);
+    alert("Kein View im Manager ausgewählt.");
     return;
   }
   
@@ -322,13 +322,12 @@ function loadContextFromManager() {
         state.context = selectedView;
         saveContext();
         renderContext();
-        updateSettingsStatus("Kontext vom Manager geladen.", false);
         return;
       }
     }
-    updateSettingsStatus("Kein View im Manager ausgewählt.", true);
+    alert("Kein View im Manager ausgewählt.");
   } catch (error) {
-    updateSettingsStatus("Fehler beim Laden des Kontexts.", true);
+    alert("Fehler beim Laden des Kontexts.");
   }
 }
 
@@ -336,7 +335,6 @@ function clearContext() {
   state.context = null;
   saveContext();
   renderContext();
-  updateSettingsStatus("Kontext gelöscht.", false);
 }
 
 function clearChat() {
@@ -346,7 +344,6 @@ function clearChat() {
   state.chat.lastAssistantMessage = "";
   saveChatHistory();
   renderChat();
-  updateSettingsStatus("Chat-Verlauf gelöscht.", false);
 }
 
 function wireEvents() {
