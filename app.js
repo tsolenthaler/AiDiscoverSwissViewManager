@@ -423,10 +423,6 @@ function renderFacets() {
           <input data-field="name" value="${facet.name || ""}" />
         </label>
         <label>
-          <span>Response Name (single)</span>
-          <input data-field="responseName" value="${facet.responseName || ""}" />
-        </label>
-        <label>
           <span>Response Names DE</span>
           <input data-field="responseNames.de" value="${facet.responseNames?.de || ""}" />
         </label>
@@ -520,7 +516,6 @@ function buildRequestBody() {
       .map((facet) => {
         const mapped = {
           name: facet.name || undefined,
-          responseName: facet.responseName || undefined,
           responseNames: facet.responseNames || undefined,
           filterValues: facet.filterValues?.length ? facet.filterValues : undefined,
           additionalType: facet.additionalType?.length ? facet.additionalType : undefined,
@@ -634,7 +629,6 @@ function applyViewToDraft(view) {
   
   state.draft.facets = (view.searchRequest?.facets || []).map((facet) => ({
     name: facet.name,
-    responseName: facet.responseName,
     responseNames: facet.responseNames,
     filterValues: facet.filterValues || [],
     additionalType: facet.additionalType || [],
@@ -777,7 +771,6 @@ function wireEvents() {
   elements.addFacetBtn.addEventListener("click", () => {
     state.draft.facets.push({
       name: "",
-      responseName: "",
       responseNames: { de: "", en: "" },
       filterValues: [],
       additionalType: [],
@@ -854,7 +847,6 @@ function init() {
       if (Array.isArray(searchRequest.facets)) {
         state.draft.facets = searchRequest.facets.map((facet) => ({
           name: facet.name,
-          responseName: facet.responseName,
           responseNames: facet.responseNames,
           filterValues: facet.filterValues || [],
           additionalType: facet.additionalType || [],
