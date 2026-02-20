@@ -785,7 +785,7 @@ function switchEditorTab(tabName) {
 }
 
 function switchDataTab(tabName) {
-  dataTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.dataTab === tabName));
+  dataTabs.forEach((tab) => tab.classList.toggle("active", tab.getAttribute("data-sub-tab") === tabName));
   dataTabContents.forEach((content) => content.classList.toggle("active", content.id === `data-tab-${tabName}`));
 }
 
@@ -1035,7 +1035,7 @@ function wireEvents() {
   });
 
   dataTabs.forEach((tab) => {
-    tab.addEventListener("click", () => switchDataTab(tab.dataset.dataTab));
+    tab.addEventListener("click", () => switchDataTab(tab.getAttribute("data-sub-tab")));
   });
 
   previewTabs.forEach((tab) => {
@@ -1054,6 +1054,8 @@ function init() {
   dataTabContents = document.querySelectorAll("#tab-data .data-tab-content");
   previewTabs = document.querySelectorAll("#previewTabs .tab");
   previewTabContents = document.querySelectorAll("#resultsPanel .tab-content");
+
+  switchDataTab("response");
   
   wireEvents();
   
