@@ -76,6 +76,7 @@ const elements = {
   viewSearchInput: document.getElementById("viewSearchInput"),
   viewsList: document.getElementById("viewsList"),
   loadViewBtn: document.getElementById("loadViewBtn"),
+  duplicateViewBtn: document.getElementById("duplicateViewBtn"),
   deleteViewBtn: document.getElementById("deleteViewBtn"),
   draftName: document.getElementById("draftName"),
   draftDescription: document.getElementById("draftDescription"),
@@ -1146,6 +1147,9 @@ function updateButtonStates() {
   const isEditingExisting = !!state.selectedViewId;
   elements.createViewBtn.disabled = isEditingExisting;
   elements.updateViewBtn.disabled = !isEditingExisting;
+  if (elements.duplicateViewBtn) {
+    elements.duplicateViewBtn.disabled = !isEditingExisting;
+  }
   
   if (isEditingExisting) {
     elements.createViewBtn.style.opacity = "0.5";
@@ -1623,6 +1627,48 @@ async function deleteView() {
   }
 }
 
+async function duplicateView() {
+  if (!state.selectedViewId) return;
+  try {
+    showLoading();
+    const sourceView = await apiRequest(`/search/views/${state.selectedViewId}`, { method: "GET" });
+
+    const sourceName = String(sourceView?.name || state.draft.name || "Untitled View").trim() || "Untitled View";
+    const duplicateName = `${sourceName} - Copy`;
+
+    state.responses.response = sourceView;
+    applyViewToDraft(sourceView);
+
+    const requestBody = buildRequestBody();
+    requestBody.name = duplicateName;
+
+    const createdView = await apiRequest("/search/views", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+    });
+
+    state.responses.response = createdView;
+    setResponseJson(elements.responseJson, createdView);
+    state.draft.name = duplicateName;
+    renderDraft();
+
+    await loadViews();
+
+    const createdViewId = getViewId(createdView);
+    if (createdViewId != null) {
+      state.selectedViewId = createdViewId;
+      updateEditorViewTitle();
+      renderViews();
+      updateButtonStates();
+      await loadSelectedView();
+    }
+  } catch (error) {
+    setResponseJson(elements.responseJson, error);
+  } finally {
+    hideLoading();
+  }
+}
+
 async function previewResults() {
   if (!state.selectedViewId) {
     setResponseJson(elements.resultsJson, { message: "Select a view first." });
@@ -1674,6 +1720,9 @@ function extractJsonFromText(text) {
 function wireEvents() {
   elements.refreshViewsBtn.addEventListener("click", loadViews);
   elements.loadViewBtn.addEventListener("click", loadSelectedView);
+  if (elements.duplicateViewBtn) {
+    elements.duplicateViewBtn.addEventListener("click", duplicateView);
+  }
   elements.deleteViewBtn.addEventListener("click", deleteView);
 
   if (elements.viewSearchInput) {
