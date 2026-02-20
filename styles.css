@@ -441,6 +441,16 @@ button.danger {
   display: flex;
 }
 
+.data-tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.data-tab-content.active {
+  display: flex;
+}
+
 .code-block {
   background: #0f172a;
   color: #e2e8f0;

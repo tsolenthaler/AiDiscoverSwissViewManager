@@ -33,10 +33,9 @@
 
       <details class="panel wide">
         <summary class="panel-summary"><h2>Editor<span id="editorViewTitle"></span></h2></summary>
-        <div class="tabs">
+        <div class="tabs" id="editorTabs">
           <button class="tab active" data-tab="draft">Draft editor</button>
-          <button class="tab" data-tab="request">Request</button>
-          <button class="tab" data-tab="response">Responses</button>
+          <button class="tab" data-tab="data">Data</button>
         </div>
 
         <div id="tab-draft" class="tab-content active">
@@ -83,23 +82,32 @@
           </div>
         </div>
 
-        <div id="tab-request" class="tab-content">
-          <div class="section-title">API Requests</div>
-          <div class="button-row">
-            <button id="copyRequestBtn" class="ghost">Copy search request JSON</button>
+        <div id="tab-data" class="tab-content">
+          <div class="tabs" id="dataTabs">
+            <button class="tab active" data-data-tab="response">Responses</button>
+            <button class="tab" data-data-tab="request">Request</button>
           </div>
-          
-          <details class="sub-details">
-            <summary>Search Request (discover.swiss API)</summary>
-            <pre id="requestJson" class="code-block"></pre>
-          </details>
-        </div>
 
-        <div id="tab-response" class="tab-content">
-          <div>
-            <div class="section-title">API response</div>
-            <button id="copyResponseBtn" class="ghost">Copy response JSON</button>
-            <pre id="responseJson" class="code-block"></pre>
+          <div id="data-tab-response" class="data-tab-content active">
+            <div class="section-title">API Responses</div>
+            <div class="button-row">
+              <button id="copyResponseBtn" class="ghost">Copy response JSON</button>
+            </div>
+            <details class="sub-details">
+              <summary>Response (discover.swiss API)</summary>
+              <pre id="responseJson" class="code-block"></pre>
+            </details>
+          </div>
+
+          <div id="data-tab-request" class="data-tab-content">
+            <div class="section-title">API Requests</div>
+            <div class="button-row">
+              <button id="copyRequestBtn" class="ghost">Copy search request JSON</button>
+            </div>
+            <details class="sub-details">
+              <summary>Search Request (discover.swiss API)</summary>
+              <pre id="requestJson" class="code-block"></pre>
+            </details>
           </div>
         </div>
       </details>

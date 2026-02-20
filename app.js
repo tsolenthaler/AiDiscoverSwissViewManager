@@ -92,8 +92,12 @@ const elements = {
   loadingOverlay: document.getElementById("loadingOverlay"),
 };
 
-let tabs = [];
-let tabContents = [];
+let editorTabs = [];
+let editorTabContents = [];
+let dataTabs = [];
+let dataTabContents = [];
+let previewTabs = [];
+let previewTabContents = [];
 
 function showLoading() {
   elements.loadingOverlay.classList.add("active");
@@ -775,10 +779,20 @@ function setResponseJson(target, data) {
   target.textContent = data ? JSON.stringify(data, null, 2) : "";
 }
 
-function switchTab(tabName) {
-  tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
-  tabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
-  
+function switchEditorTab(tabName) {
+  editorTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
+  editorTabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
+}
+
+function switchDataTab(tabName) {
+  dataTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.dataTab === tabName));
+  dataTabContents.forEach((content) => content.classList.toggle("active", content.id === `data-tab-${tabName}`));
+}
+
+function switchPreviewTab(tabName) {
+  previewTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
+  previewTabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
+
   if (tabName === "live") {
     renderLivePreview();
   } else if (tabName === "facets") {
@@ -809,7 +823,7 @@ async function loadSelectedView() {
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
     applyViewToDraft(data);
-    switchTab("draft");
+    switchEditorTab("draft");
   } catch (error) {
     setResponseJson(elements.responseJson, error);
   } finally {
@@ -920,7 +934,7 @@ async function previewResults() {
     if (resultsPanel) {
       resultsPanel.open = true;
     }
-    switchTab("live");
+    switchPreviewTab("live");
   } catch (error) {
     setResponseJson(elements.resultsJson, error);
   } finally {
@@ -1016,8 +1030,16 @@ function wireEvents() {
     );
   }
 
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+  editorTabs.forEach((tab) => {
+    tab.addEventListener("click", () => switchEditorTab(tab.dataset.tab));
+  });
+
+  dataTabs.forEach((tab) => {
+    tab.addEventListener("click", () => switchDataTab(tab.dataset.dataTab));
+  });
+
+  previewTabs.forEach((tab) => {
+    tab.addEventListener("click", () => switchPreviewTab(tab.dataset.tab));
   });
 }
 
@@ -1025,9 +1047,13 @@ function init() {
   loadSettings();
   renderDraft();
   
-  // Initialize tabs and tabContents before wireEvents
-  tabs = document.querySelectorAll(".tab");
-  tabContents = document.querySelectorAll(".tab-content");
+  // Initialize tab groups before wireEvents
+  editorTabs = document.querySelectorAll("#editorTabs .tab");
+  editorTabContents = document.querySelectorAll("details.panel.wide > .tab-content");
+  dataTabs = document.querySelectorAll("#dataTabs .tab");
+  dataTabContents = document.querySelectorAll("#tab-data .data-tab-content");
+  previewTabs = document.querySelectorAll("#previewTabs .tab");
+  previewTabContents = document.querySelectorAll("#resultsPanel .tab-content");
   
   wireEvents();
   
@@ -1094,19 +1120,6 @@ function init() {
     });
   });
 
-  const previewTabs = document.querySelectorAll("#previewTabs .tab");
-  previewTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const tabName = tab.dataset.tab;
-      previewTabs.forEach((t) => t.classList.toggle("active", t === tab));
-      const tabContents = document.querySelectorAll("#resultsPanel .tab-content");
-      tabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
-      
-      if (tabName === "live") {
-        renderLivePreview();
-      }
-    });
-  });
 }
 
 init();
