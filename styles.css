@@ -76,6 +76,12 @@ body {
   background: var(--primary-dark);
 }
 
+.settings-link-config {
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;

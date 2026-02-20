@@ -97,6 +97,7 @@ const elements = {
   editorViewTitle: document.getElementById("editorViewTitle"),
   loadingOverlay: document.getElementById("loadingOverlay"),
   historyList: document.getElementById("historyList"),
+  settingsConfigLabel: document.getElementById("settingsConfigLabel"),
 };
 
 let editorTabs = [];
@@ -364,6 +365,20 @@ function loadSettings() {
   } else {
     state.settings = { ...DEFAULT_SETTINGS };
   }
+}
+
+function renderSettingsConfigLabel() {
+  if (!elements.settingsConfigLabel) return;
+
+  const configName = state.settings.name?.trim();
+  const env = (state.settings.env || "test").toUpperCase();
+
+  if (configName) {
+    elements.settingsConfigLabel.textContent = `${configName} (${env})`;
+    return;
+  }
+
+  elements.settingsConfigLabel.textContent = `Keine Konfig (${env})`;
 }
 
 function saveSettings() {
@@ -1555,6 +1570,7 @@ function wireEvents() {
 
 function init() {
   loadSettings();
+  renderSettingsConfigLabel();
   loadViewHistory();
   renderDraft();
   
