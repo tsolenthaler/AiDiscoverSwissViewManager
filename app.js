@@ -1165,6 +1165,7 @@ function renderViews() {
         return;
       }
       state.selectedViewId = viewId;
+      syncViewIdInUrl(state.selectedViewId);
       renderViews();
       updateButtonStates();
       updateEditorViewTitle();
@@ -1625,6 +1626,16 @@ function setResponseJson(target, data) {
   target.textContent = data ? JSON.stringify(data, null, 2) : "";
 }
 
+function syncViewIdInUrl(viewId) {
+  const url = new URL(window.location.href);
+  if (viewId == null || String(viewId).trim() === "") {
+    url.searchParams.delete("viewId");
+  } else {
+    url.searchParams.set("viewId", String(viewId));
+  }
+  window.history.replaceState({}, "", url.toString());
+}
+
 function getRequestedViewIdFromUrl() {
   const params = new URLSearchParams(window.location.search || "");
   const viewId = params.get("viewId");
@@ -1658,6 +1669,7 @@ async function tryLoadViewFromDeepLink() {
   }
 
   state.selectedViewId = getViewId(matchedView);
+  syncViewIdInUrl(state.selectedViewId);
   renderViews();
   updateButtonStates();
   updateEditorViewTitle();
@@ -1760,6 +1772,7 @@ async function createView() {
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
     state.selectedViewId = null;
+    syncViewIdInUrl(null);
     updateEditorViewTitle();
     await loadViews();
   } catch (error) {
@@ -1810,6 +1823,7 @@ async function deleteView() {
     showLoading();
     await apiRequest(`/search/views/${state.selectedViewId}`, { method: "DELETE" });
     state.selectedViewId = null;
+    syncViewIdInUrl(null);
     updateEditorViewTitle();
     await loadViews();
     setResponseJson(elements.responseJson, { message: "Deleted." });
@@ -1849,6 +1863,7 @@ async function duplicateView() {
     const createdViewId = getViewId(createdView);
     if (createdViewId != null) {
       state.selectedViewId = createdViewId;
+      syncViewIdInUrl(state.selectedViewId);
       updateEditorViewTitle();
       renderViews();
       updateButtonStates();
