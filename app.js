@@ -35,6 +35,8 @@ const FACET_NAME_OPTIONS = [
   "leafType",
   "amenityFeature",
   "starRating/name",
+  "address/addressLocality",
+  "address/postalCode",
 ];
 
 const FACET_ORDER_BY_OPTIONS = ["name", "count"];
@@ -643,6 +645,8 @@ function renderFacets() {
             <option value="leafType" ${normalizeFacetName(facet.name) === "leafType" ? "selected" : ""}>leafType</option>
             <option value="amenityFeature" ${normalizeFacetName(facet.name) === "amenityFeature" ? "selected" : ""}>amenityFeature</option>
             <option value="starRating/name" ${normalizeFacetName(facet.name) === "starRating/name" ? "selected" : ""}>starRating/name</option>
+            <option value="address/addressLocality" ${normalizeFacetName(facet.name) === "address/addressLocality" ? "selected" : ""}>address/addressLocality</option>
+            <option value="address/postalCode" ${normalizeFacetName(facet.name) === "address/postalCode" ? "selected" : ""}>address/postalCode</option>
           </select>
         </label>
         <label>
