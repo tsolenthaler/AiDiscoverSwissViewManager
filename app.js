@@ -87,6 +87,7 @@ const elements = {
   addFacetBtn: document.getElementById("addFacetBtn"),
   createViewBtn: document.getElementById("createViewBtn"),
   updateViewBtn: document.getElementById("updateViewBtn"),
+  duplicateEditorViewBtn: document.getElementById("duplicateEditorViewBtn"),
   previewResultsBtn: document.getElementById("previewResultsBtn"),
   copyRequestBtn: document.getElementById("copyRequestBtn"),
   copyOpenaiRequestBtn: document.getElementById("copyOpenaiRequestBtn"),
@@ -1179,6 +1180,9 @@ function updateButtonStates() {
   if (elements.duplicateViewBtn) {
     elements.duplicateViewBtn.disabled = !isEditingExisting;
   }
+  if (elements.duplicateEditorViewBtn) {
+    elements.duplicateEditorViewBtn.disabled = !isEditingExisting;
+  }
   
   if (isEditingExisting) {
     elements.createViewBtn.style.opacity = "0.5";
@@ -1751,6 +1755,9 @@ function wireEvents() {
   elements.loadViewBtn.addEventListener("click", loadSelectedView);
   if (elements.duplicateViewBtn) {
     elements.duplicateViewBtn.addEventListener("click", duplicateView);
+  }
+  if (elements.duplicateEditorViewBtn) {
+    elements.duplicateEditorViewBtn.addEventListener("click", duplicateView);
   }
   elements.deleteViewBtn.addEventListener("click", deleteView);
 
