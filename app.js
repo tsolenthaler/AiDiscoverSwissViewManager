@@ -9,6 +9,20 @@ const DEFAULT_SETTINGS = {
   env: "test",
 };
 
+const SEARCH_REQUEST_FILTER_KEYS = [
+  "combinedTypeTree",
+  "categoryTree",
+  "filters",
+  "award",
+  "campaignTag",
+  "allTag",
+  "category",
+  "amenityFeature",
+  "starRatingName",
+  "addressLocality",
+  "addressPostalCode",
+];
+
 const state = {
   settings: { ...DEFAULT_SETTINGS },
   views: [],
@@ -687,10 +701,11 @@ function buildRequestBody() {
   };
 
   state.draft.filters.forEach((filter) => {
-    if (filter.type === "combinedTypeTree") {
-      searchRequest.combinedTypeTree = filter.values;
-    } else if (filter.type === "categoryTree") {
-      searchRequest.categoryTree = filter.values;
+    if (!filter.type || !SEARCH_REQUEST_FILTER_KEYS.includes(filter.type)) {
+      return;
+    }
+    if (Array.isArray(filter.values) && filter.values.length) {
+      searchRequest[filter.type] = filter.values;
     }
   });
 
@@ -766,22 +781,16 @@ function applyViewToDraft(view) {
   
   // Reset filters
   state.draft.filters = [];
-  
-  // Add combinedTypeTree filter if present
-  if (view.searchRequest?.combinedTypeTree?.length) {
-    state.draft.filters.push({
-      type: "combinedTypeTree",
-      values: view.searchRequest.combinedTypeTree,
-    });
-  }
-  
-  // Add categoryTree filter if present
-  if (view.searchRequest?.categoryTree?.length) {
-    state.draft.filters.push({
-      type: "categoryTree",
-      values: view.searchRequest.categoryTree,
-    });
-  }
+
+  SEARCH_REQUEST_FILTER_KEYS.forEach((key) => {
+    const values = view.searchRequest?.[key];
+    if (Array.isArray(values) && values.length) {
+      state.draft.filters.push({
+        type: key,
+        values,
+      });
+    }
+  });
   
   state.draft.facets = (view.searchRequest?.facets || []).map((facet) => ({
     name: facet.name,
@@ -990,20 +999,16 @@ function init() {
       
       const searchRequest = json.searchRequest || {};
       state.draft.filters = [];
-      
-      if (searchRequest.combinedTypeTree?.length) {
-        state.draft.filters.push({
-          type: "combinedTypeTree",
-          values: searchRequest.combinedTypeTree,
-        });
-      }
-      
-      if (searchRequest.categoryTree?.length) {
-        state.draft.filters.push({
-          type: "categoryTree",
-          values: searchRequest.categoryTree,
-        });
-      }
+
+      SEARCH_REQUEST_FILTER_KEYS.forEach((key) => {
+        const values = searchRequest[key];
+        if (Array.isArray(values) && values.length) {
+          state.draft.filters.push({
+            type: key,
+            values,
+          });
+        }
+      });
       
       if (Array.isArray(searchRequest.facets)) {
         state.draft.facets = searchRequest.facets.map((facet) => ({
