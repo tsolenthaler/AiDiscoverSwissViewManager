@@ -689,10 +689,6 @@ function showCompareSelectionModal(history, preselectedIndex) {
   const currentOptionHtml = currentView ? `<option value="current">${currentView.label}</option>` : "";
   const optionsHtml = `${currentOptionHtml}${historyOptionsHtml}`;
 
-  const defaultNewerIndex = preselectedIndex;
-  const defaultOlderIndex =
-    preselectedIndex < history.length - 1 ? preselectedIndex + 1 : preselectedIndex - 1;
-
   modal.innerHTML = `
     <div class="modal-content">
       <div class="modal-header">
@@ -720,8 +716,8 @@ function showCompareSelectionModal(history, preselectedIndex) {
 
   const selectA = document.getElementById("compareVersionA");
   const selectB = document.getElementById("compareVersionB");
-  selectA.value = String(defaultOlderIndex);
-  selectB.value = String(defaultNewerIndex);
+  selectA.value = String(preselectedIndex);
+  selectB.value = currentView ? "current" : String(preselectedIndex);
 
   const closeModal = () => {
     modal.remove();
