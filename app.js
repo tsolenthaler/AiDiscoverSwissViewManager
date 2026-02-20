@@ -375,11 +375,16 @@ function renderViews() {
     return;
   }
   state.views.forEach((view) => {
+    const viewId = getViewId(view);
+    const isActive = state.selectedViewId != null && viewId != null && String(state.selectedViewId) === String(viewId);
     const item = document.createElement("div");
-    item.className = `list-item ${state.selectedViewId === view.id ? "active" : ""}`;
-    item.textContent = `${view.name || view.id} · ${view.scheduleStrategy || ""}`;
+    item.className = `list-item ${isActive ? "active" : ""}`;
+    item.textContent = `${view.name || viewId || "(no id)"} · ${view.scheduleStrategy || ""}`;
     item.addEventListener("click", () => {
-      state.selectedViewId = view.id;
+      if (!viewId) {
+        return;
+      }
+      state.selectedViewId = viewId;
       renderViews();
       updateButtonStates();
       updateEditorViewTitle();
@@ -389,11 +394,18 @@ function renderViews() {
   });
 }
 
+function getViewId(view) {
+  return view?.id ?? view?.identifier ?? view?.viewId ?? view?.uuid ?? null;
+}
+
 function updateEditorViewTitle() {
   if (state.selectedViewId) {
-    const selectedView = state.views.find((v) => v.id === state.selectedViewId);
+    const selectedView = state.views.find((v) => {
+      const viewId = getViewId(v);
+      return viewId != null && String(viewId) === String(state.selectedViewId);
+    });
     if (selectedView) {
-      elements.editorViewTitle.textContent = ` · ${selectedView.name || selectedView.id}`;
+      elements.editorViewTitle.textContent = ` · ${selectedView.name || getViewId(selectedView)}`;
     }
   } else {
     elements.editorViewTitle.textContent = "";
