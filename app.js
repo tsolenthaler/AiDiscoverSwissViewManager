@@ -523,6 +523,47 @@ function showJsonModal(data) {
   });
 }
 
+function showErrorModal(error) {
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+  
+  const errorData = {
+    status: error.status || "unknown",
+    message: error.message || "Request failed",
+    details: error.data || error
+  };
+  
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #fee; border-bottom: 2px solid #c33;">
+        <h3 style="color: #c33;">❌ Update Failed</h3>
+        <button class="ghost small" id="closeErrorModal">Close</button>
+      </div>
+      <div style="padding: 16px; background-color: #fff5f5;">
+        <p style="margin: 0 0 12px 0; font-weight: 600; color: #c33;">
+          Status: ${errorData.status} - ${errorData.message}
+        </p>
+        <details open>
+          <summary style="cursor: pointer; font-weight: 600; margin-bottom: 8px;">Full Response</summary>
+          <pre class="code-block" style="margin-top: 8px;">${JSON.stringify(errorData.details, null, 2)}</pre>
+        </details>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  document.getElementById("closeErrorModal").addEventListener("click", () => {
+    modal.remove();
+  });
+  
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
 function showComparisonModal(oldVersion, currentVersion) {
   const modal = document.createElement("div");
   modal.className = "modal-overlay";
@@ -1137,7 +1178,7 @@ async function updateView() {
     await loadViews();
     renderHistory();
   } catch (error) {
-    // Show error message when status is not 200
+    // Show error message in popup with complete response when status is not 200
     const errorMessage = {
       error: "Update failed",
       status: error.status || "unknown",
@@ -1145,7 +1186,7 @@ async function updateView() {
       details: error.data || error
     };
     setResponseJson(elements.responseJson, errorMessage);
-    alert(`View update failed: ${error.message || "Request failed"} (Status: ${error.status || "unknown"})`);
+    showErrorModal(error);
     hideLoading();
   }
 }
