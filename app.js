@@ -23,7 +23,25 @@ const SEARCH_REQUEST_FILTER_KEYS = [
   "addressPostalCode",
 ];
 
+const FACET_NAME_OPTIONS = [
+  "containedInPlace/id",
+  "categoryTree",
+  "combinedTypeTree",
+  "season",
+  "openingHoursSpecification/dayOfWeek",
+  "priceRange",
+  "award",
+  "tag",
+  "leafType",
+  "amenityFeature",
+  "starRating/name",
+];
+
 const FACET_ORDER_BY_OPTIONS = ["name", "count"];
+
+function normalizeFacetName(value) {
+  return FACET_NAME_OPTIONS.includes(value) ? value : FACET_NAME_OPTIONS[0];
+}
 
 function normalizeFacetOrderBy(value) {
   return FACET_ORDER_BY_OPTIONS.includes(value) ? value : "name";
@@ -578,7 +596,19 @@ function renderFacets() {
       <div class="card-body grid-2">
         <label>
           <span>Name</span>
-          <input data-field="name" value="${facet.name || ""}" />
+          <select data-field="name">
+            <option value="containedInPlace/id" ${normalizeFacetName(facet.name) === "containedInPlace/id" ? "selected" : ""}>containedInPlace/id</option>
+            <option value="categoryTree" ${normalizeFacetName(facet.name) === "categoryTree" ? "selected" : ""}>categoryTree</option>
+            <option value="combinedTypeTree" ${normalizeFacetName(facet.name) === "combinedTypeTree" ? "selected" : ""}>combinedTypeTree</option>
+            <option value="season" ${normalizeFacetName(facet.name) === "season" ? "selected" : ""}>season</option>
+            <option value="openingHoursSpecification/dayOfWeek" ${normalizeFacetName(facet.name) === "openingHoursSpecification/dayOfWeek" ? "selected" : ""}>openingHoursSpecification/dayOfWeek</option>
+            <option value="priceRange" ${normalizeFacetName(facet.name) === "priceRange" ? "selected" : ""}>priceRange</option>
+            <option value="award" ${normalizeFacetName(facet.name) === "award" ? "selected" : ""}>award</option>
+            <option value="tag" ${normalizeFacetName(facet.name) === "tag" ? "selected" : ""}>tag</option>
+            <option value="leafType" ${normalizeFacetName(facet.name) === "leafType" ? "selected" : ""}>leafType</option>
+            <option value="amenityFeature" ${normalizeFacetName(facet.name) === "amenityFeature" ? "selected" : ""}>amenityFeature</option>
+            <option value="starRating/name" ${normalizeFacetName(facet.name) === "starRating/name" ? "selected" : ""}>starRating/name</option>
+          </select>
         </label>
         <label>
           <span>Scope</span>
@@ -668,7 +698,9 @@ function updateFacetField(index, field, value) {
   const facet = state.draft.facets[index];
   if (!facet) return;
 
-  if (field === "filterValues") {
+  if (field === "name") {
+    facet.name = normalizeFacetName(value);
+  } else if (field === "filterValues") {
     facet.filterValues = value.split("\n").map((v) => v.trim()).filter(Boolean);
   } else if (field === "additionalType") {
     facet.additionalType = value.split(",").map((v) => v.trim()).filter(Boolean);
@@ -696,7 +728,7 @@ function buildRequestBody() {
     facets: state.draft.facets
       .map((facet) => {
         const mapped = {
-          name: facet.name || undefined,
+          name: normalizeFacetName(facet.name),
           responseNames: facet.responseNames || undefined,
           filterValues: facet.filterValues?.length ? facet.filterValues : undefined,
           additionalType: facet.additionalType?.length ? facet.additionalType : undefined,
@@ -804,7 +836,7 @@ function applyViewToDraft(view) {
   });
   
   state.draft.facets = (view.searchRequest?.facets || []).map((facet) => ({
-    name: facet.name,
+    name: normalizeFacetName(facet.name),
     responseNames: facet.responseNames,
     filterValues: facet.filterValues || [],
     additionalType: facet.additionalType || [],
@@ -949,7 +981,7 @@ function wireEvents() {
 
   elements.addFacetBtn.addEventListener("click", () => {
     state.draft.facets.push({
-      name: "",
+      name: FACET_NAME_OPTIONS[0],
       responseNames: { de: "", en: "" },
       filterValues: [],
       additionalType: [],
@@ -1023,7 +1055,7 @@ function init() {
       
       if (Array.isArray(searchRequest.facets)) {
         state.draft.facets = searchRequest.facets.map((facet) => ({
-          name: facet.name,
+          name: normalizeFacetName(facet.name),
           responseNames: facet.responseNames,
           filterValues: facet.filterValues || [],
           additionalType: facet.additionalType || [],
