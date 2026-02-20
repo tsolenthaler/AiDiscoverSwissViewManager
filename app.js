@@ -750,7 +750,6 @@ function showCompareSelectionModal(history, preselectedIndex) {
       </div>
       <div class="button-row">
         <button class="secondary" id="runVersionCompareBtn">Compare selected versions</button>
-        <button class="ghost" id="runCompareWithCurrentBtn">Compare selected with current</button>
       </div>
     </div>
   `;
@@ -841,18 +840,6 @@ function showCompareSelectionModal(history, preselectedIndex) {
       olderLabel: getHistoryVersionLabel(history, olderIndex),
       newerLabel: getHistoryVersionLabel(history, newerIndex),
     });
-  });
-
-  document.getElementById("runCompareWithCurrentBtn").addEventListener("click", () => {
-    const selectedIndex = parseInt(selectB.value, 10);
-
-    if (Number.isNaN(selectedIndex) || !history[selectedIndex]) {
-      alert("Please select a version to compare with current.");
-      return;
-    }
-
-    closeModal();
-    compareHistoryVersionWithCurrent(history, selectedIndex);
   });
 
   modal.addEventListener("click", (e) => {
