@@ -153,7 +153,7 @@ function renderLivePreview() {
   headerRow.style.borderBottom = "2px solid var(--border)";
   headerRow.style.backgroundColor = "#f3f4f6";
   
-  ["image", "name", "identifier", "additionalType"].forEach(header => {
+  ["image", "name", "identifier", "type", "additionalType"].forEach(header => {
     const th = document.createElement("th");
     th.textContent = header;
     th.style.padding = "12px";
@@ -174,7 +174,7 @@ function renderLivePreview() {
       row.style.backgroundColor = "#f9fafb";
     }
     
-    ["image", "name", "identifier", "additionalType"].forEach(key => {
+    ["image", "name", "identifier", "type", "additionalType"].forEach(key => {
       const cell = document.createElement("td");
       const value = item[key];
 
