@@ -29,6 +29,7 @@ const FACET_NAME_OPTIONS = [
   "categoryTree",
   "combinedTypeTree",
   "combinedType",
+  "type",
   "season",
   "openingHoursSpecification/dayOfWeek",
   "priceRange",
@@ -37,6 +38,8 @@ const FACET_NAME_OPTIONS = [
   "leafType",
   "amenityFeature",
   "starRating/name",
+  "starRating/ratingValue",
+  "starRating/superior",
   "address/addressLocality",
   "address/postalCode",
 ];
@@ -56,6 +59,34 @@ function normalizeFacetName(value) {
 
 function normalizeFacetOrderBy(value) {
   return FACET_ORDER_BY_OPTIONS.includes(value) ? value : "name";
+}
+
+function extractFacets(searchRequest) {
+  const facets = searchRequest?.facets;
+  if (Array.isArray(facets)) {
+    return facets;
+  }
+  if (facets && typeof facets === "object") {
+    return Object.values(facets);
+  }
+  return [];
+}
+
+function mapFacetToDraft(facet) {
+  if (!facet || typeof facet !== "object") {
+    return null;
+  }
+  return {
+    name: normalizeFacetName(facet.name),
+    responseNames: facet.responseNames,
+    filterValues: facet.filterValues || [],
+    additionalType: facet.additionalType || [],
+    orderBy: normalizeFacetOrderBy(facet.orderBy),
+    orderDirection: facet.orderDirection,
+    count: facet.count,
+    scope: facet.scope || "current",
+    excludeRedundant: facet.excludeRedundant || false,
+  };
 }
 
 const state = {
@@ -1683,17 +1714,9 @@ function applyViewToDraft(view) {
     }
   });
   
-  state.draft.facets = (view.searchRequest?.facets || []).map((facet) => ({
-    name: normalizeFacetName(facet.name),
-    responseNames: facet.responseNames,
-    filterValues: facet.filterValues || [],
-    additionalType: facet.additionalType || [],
-    orderBy: normalizeFacetOrderBy(facet.orderBy),
-    orderDirection: facet.orderDirection,
-    count: facet.count,
-    scope: facet.scope || "current",
-    excludeRedundant: facet.excludeRedundant || false,
-  }));
+  state.draft.facets = extractFacets(view.searchRequest)
+    .map(mapFacetToDraft)
+    .filter(Boolean);
   renderDraft();
 }
 
@@ -1991,19 +2014,9 @@ function init() {
         }
       });
       
-      if (Array.isArray(searchRequest.facets)) {
-        state.draft.facets = searchRequest.facets.map((facet) => ({
-          name: normalizeFacetName(facet.name),
-          responseNames: facet.responseNames,
-          filterValues: facet.filterValues || [],
-          additionalType: facet.additionalType || [],
-          orderBy: normalizeFacetOrderBy(facet.orderBy),
-          orderDirection: facet.orderDirection,
-          count: facet.count,
-          scope: facet.scope || "current",
-          excludeRedundant: facet.excludeRedundant || false,
-        }));
-      }
+      state.draft.facets = extractFacets(searchRequest)
+        .map(mapFacetToDraft)
+        .filter(Boolean);
       renderDraft();
       localStorage.removeItem("aiviewmanager.chatbot.draft");
       updateSettingsStatus("Draft vom Chatbot geladen!", false);
