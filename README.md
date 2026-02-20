@@ -56,6 +56,7 @@ Open [index.html](index.html) in a browser (or deploy to GitHub Pages):
 2. **Manage Views**:
    - Click "Load views" to list available Views
    - Select a View and click "Load selected" to edit
+   - Direct-link to a View via URL, e.g. `index.html?viewId=tso-c837649` (loads in Editor if found)
    - In a filter/facet card click "Copy", then load another view and use "Add copy filter" or "Add copy facet"
    - Use the Draft Editor to modify properties
    - Click "Update view" to save changes

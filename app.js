@@ -1625,6 +1625,45 @@ function setResponseJson(target, data) {
   target.textContent = data ? JSON.stringify(data, null, 2) : "";
 }
 
+function getRequestedViewIdFromUrl() {
+  const params = new URLSearchParams(window.location.search || "");
+  const viewId = params.get("viewId");
+  if (typeof viewId !== "string") {
+    return null;
+  }
+  const trimmed = viewId.trim();
+  return trimmed || null;
+}
+
+function hasLoadedConfiguration() {
+  return !!(String(state.settings.apiKey || "").trim() && String(state.settings.project || "").trim());
+}
+
+async function tryLoadViewFromDeepLink() {
+  const requestedViewId = getRequestedViewIdFromUrl();
+  if (!requestedViewId || !hasLoadedConfiguration()) {
+    return;
+  }
+
+  await loadViews();
+
+  const matchedView = state.views.find((view) => {
+    const viewId = getViewId(view);
+    return viewId != null && String(viewId) === requestedViewId;
+  });
+
+  if (!matchedView) {
+    alert("Dies View wurde nicht gefunden. Evlt. stimmt die Konfiguration nicht");
+    return;
+  }
+
+  state.selectedViewId = getViewId(matchedView);
+  renderViews();
+  updateButtonStates();
+  updateEditorViewTitle();
+  await loadSelectedView();
+}
+
 function switchEditorTab(tabName) {
   editorTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
   editorTabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
@@ -2033,6 +2072,10 @@ function init() {
         }
       });
     });
+  });
+
+  tryLoadViewFromDeepLink().catch((error) => {
+    console.error("Error loading deep linked view:", error);
   });
 
 }
