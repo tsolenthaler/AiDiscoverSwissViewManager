@@ -56,6 +56,8 @@ const state = {
   viewSearchQuery: "",
   selectedViewId: null,
   viewHistory: {},
+  copiedFilter: null,
+  copiedFacet: null,
   draft: {
     name: "",
     description: "",
@@ -82,9 +84,11 @@ const elements = {
   draftDescription: document.getElementById("draftDescription"),
   draftSchedule: document.getElementById("draftSchedule"),
   addFilterBtn: document.getElementById("addFilterBtn"),
+  addCopiedFilterBtn: document.getElementById("addCopiedFilterBtn"),
   filterList: document.getElementById("filterList"),
   facetList: document.getElementById("facetList"),
   addFacetBtn: document.getElementById("addFacetBtn"),
+  addCopiedFacetBtn: document.getElementById("addCopiedFacetBtn"),
   createViewBtn: document.getElementById("createViewBtn"),
   updateViewBtn: document.getElementById("updateViewBtn"),
   duplicateEditorViewBtn: document.getElementById("duplicateEditorViewBtn"),
@@ -1149,6 +1153,95 @@ function getViewId(view) {
   return view?.id ?? view?.identifier ?? view?.viewId ?? view?.uuid ?? null;
 }
 
+function cloneFilter(filter) {
+  return {
+    type: filter?.type || "combinedTypeTree",
+    values: Array.isArray(filter?.values) ? [...filter.values] : [],
+  };
+}
+
+function cloneFacet(facet) {
+  return {
+    name: normalizeFacetName(facet?.name),
+    responseNames: {
+      de: facet?.responseNames?.de || "",
+      en: facet?.responseNames?.en || "",
+    },
+    filterValues: Array.isArray(facet?.filterValues) ? [...facet.filterValues] : [],
+    additionalType: Array.isArray(facet?.additionalType) ? [...facet.additionalType] : [],
+    orderBy: normalizeFacetOrderBy(facet?.orderBy),
+    orderDirection: facet?.orderDirection || "",
+    count: facet?.count,
+    scope: facet?.scope || "current",
+    excludeRedundant: !!facet?.excludeRedundant,
+  };
+}
+
+function canInsertCopiedFilter() {
+  return !!(
+    state.copiedFilter &&
+    state.selectedViewId &&
+    String(state.copiedFilter.sourceViewId) !== String(state.selectedViewId)
+  );
+}
+
+function canInsertCopiedFacet() {
+  return !!(
+    state.copiedFacet &&
+    state.selectedViewId &&
+    String(state.copiedFacet.sourceViewId) !== String(state.selectedViewId)
+  );
+}
+
+function updateCopiedInsertButtonsVisibility() {
+  if (elements.addCopiedFilterBtn) {
+    elements.addCopiedFilterBtn.style.display = canInsertCopiedFilter() ? "inline-flex" : "none";
+  }
+  if (elements.addCopiedFacetBtn) {
+    elements.addCopiedFacetBtn.style.display = canInsertCopiedFacet() ? "inline-flex" : "none";
+  }
+}
+
+function copyFilterForOtherView(filter) {
+  if (!state.selectedViewId) {
+    alert("Load a view first.");
+    return;
+  }
+  state.copiedFilter = {
+    sourceViewId: String(state.selectedViewId),
+    item: cloneFilter(filter),
+  };
+  updateCopiedInsertButtonsVisibility();
+  alert("Filter copied. Load another view and click 'Add copy filter'.");
+}
+
+function copyFacetForOtherView(facet) {
+  if (!state.selectedViewId) {
+    alert("Load a view first.");
+    return;
+  }
+  state.copiedFacet = {
+    sourceViewId: String(state.selectedViewId),
+    item: cloneFacet(facet),
+  };
+  updateCopiedInsertButtonsVisibility();
+  alert("Facet copied. Load another view and click 'Add copy facet'.");
+}
+
+function addCopiedFilterToDraft() {
+  if (!canInsertCopiedFilter()) return;
+  state.draft.filters.push(cloneFilter(state.copiedFilter.item));
+  renderFilters();
+  updateRequestJson();
+}
+
+function addCopiedFacetToDraft() {
+  if (!canInsertCopiedFacet()) return;
+  state.draft.facets.push(cloneFacet(state.copiedFacet.item));
+  renderFacets();
+  updateRequestJson();
+}
+
 function updateEditorViewTitle() {
   if (state.selectedViewId) {
     const selectedView = state.views.find((v) => {
@@ -1167,6 +1260,7 @@ function renderDraft() {
   elements.draftName.value = state.draft.name;
   elements.draftDescription.value = state.draft.description;
   elements.draftSchedule.value = state.draft.scheduleStrategy;
+  updateCopiedInsertButtonsVisibility();
   renderFilters();
   renderFacets();
   updateRequestJson();
@@ -1217,6 +1311,7 @@ function renderFilters() {
         <div class="button-row">
           <button class="secondary" data-action="up">Up</button>
           <button class="secondary" data-action="down">Down</button>
+          <button class="secondary" data-action="copy">Copy</button>
           <button class="danger" data-action="remove">Remove</button>
         </div>
       </summary>
@@ -1250,6 +1345,9 @@ function renderFilters() {
         const action = button.dataset.action;
         if (action === "remove") {
           state.draft.filters.splice(index, 1);
+        } else if (action === "copy") {
+          copyFilterForOtherView(filter);
+          return;
         } else if (action === "up" && index > 0) {
           [state.draft.filters[index - 1], state.draft.filters[index]] = [
             state.draft.filters[index],
@@ -1309,6 +1407,7 @@ function renderFacets() {
         <div class="button-row">
           <button class="secondary" data-action="up">Up</button>
           <button class="secondary" data-action="down">Down</button>
+          <button class="secondary" data-action="copy">Copy</button>
           <button class="danger" data-action="remove">Remove</button>
         </div>
       </summary>
@@ -1387,6 +1486,9 @@ function renderFacets() {
         const action = button.dataset.action;
         if (action === "remove") {
           state.draft.facets.splice(index, 1);
+        } else if (action === "copy") {
+          copyFacetForOtherView(facet);
+          return;
         } else if (action === "up" && index > 0) {
           [state.draft.facets[index - 1], state.draft.facets[index]] = [
             state.draft.facets[index],
@@ -1805,6 +1907,14 @@ function wireEvents() {
     });
     renderFacets();
   });
+
+  if (elements.addCopiedFilterBtn) {
+    elements.addCopiedFilterBtn.addEventListener("click", addCopiedFilterToDraft);
+  }
+
+  if (elements.addCopiedFacetBtn) {
+    elements.addCopiedFacetBtn.addEventListener("click", addCopiedFacetToDraft);
+  }
 
   elements.createViewBtn.addEventListener("click", createView);
   elements.updateViewBtn.addEventListener("click", updateView);
