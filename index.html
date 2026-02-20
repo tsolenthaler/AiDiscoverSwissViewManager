@@ -36,6 +36,7 @@
         <div class="tabs" id="editorTabs">
           <button class="tab active" data-tab="draft">Draft editor</button>
           <button class="tab" data-tab="data">Data</button>
+          <button class="tab" data-tab="history">History</button>
         </div>
 
         <div id="tab-draft" class="tab-content active">
@@ -109,6 +110,11 @@
               <pre id="requestJson" class="code-block"></pre>
             </details>
           </div>
+        </div>
+
+        <div id="tab-history" class="tab-content">
+          <div class="section-title">Version History</div>
+          <div id="historyList" class="history-list"></div>
         </div>
       </details>
 

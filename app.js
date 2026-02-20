@@ -1,5 +1,6 @@
 const CONFIGS_KEY = "aiviewmanager.configs";
 const CURRENT_CONFIG_KEY = "aiviewmanager.current_config";
+const VIEW_HISTORY_KEY = "aiviewmanager.view_history";
 
 const DEFAULT_SETTINGS = {
   apiKey: "",
@@ -54,6 +55,7 @@ const state = {
   views: [],
   viewSearchQuery: "",
   selectedViewId: null,
+  viewHistory: {},
   draft: {
     name: "",
     description: "",
@@ -94,6 +96,7 @@ const elements = {
   copyResponseBtn: document.getElementById("copyResponseBtn"),
   editorViewTitle: document.getElementById("editorViewTitle"),
   loadingOverlay: document.getElementById("loadingOverlay"),
+  historyList: document.getElementById("historyList"),
 };
 
 let editorTabs = [];
@@ -367,6 +370,195 @@ function saveSettings() {
   // Settings werden in settings.js verwaltet
   // Diese Funktion bleibt zur Kompatibilität, tut aber nichts
 }
+
+// ========== View History Management ==========
+
+function loadViewHistory() {
+  try {
+    const historyData = localStorage.getItem(VIEW_HISTORY_KEY);
+    state.viewHistory = historyData ? JSON.parse(historyData) : {};
+  } catch (error) {
+    console.error("Error loading view history:", error);
+    state.viewHistory = {};
+  }
+}
+
+function saveViewHistory() {
+  try {
+    localStorage.setItem(VIEW_HISTORY_KEY, JSON.stringify(state.viewHistory));
+  } catch (error) {
+    console.error("Error saving view history:", error);
+  }
+}
+
+function addVersionToHistory(viewId, versionData) {
+  if (!viewId) return;
+  
+  const viewIdStr = String(viewId);
+  if (!state.viewHistory[viewIdStr]) {
+    state.viewHistory[viewIdStr] = [];
+  }
+  
+  const version = {
+    timestamp: new Date().toISOString(),
+    data: versionData,
+  };
+  
+  state.viewHistory[viewIdStr].unshift(version);
+  
+  // Keep max 20 versions per view
+  if (state.viewHistory[viewIdStr].length > 20) {
+    state.viewHistory[viewIdStr] = state.viewHistory[viewIdStr].slice(0, 20);
+  }
+  
+  saveViewHistory();
+}
+
+function getViewHistory(viewId) {
+  if (!viewId) return [];
+  return state.viewHistory[String(viewId)] || [];
+}
+
+function renderHistory() {
+  if (!elements.historyList) return;
+  
+  elements.historyList.innerHTML = "";
+  
+  if (!state.selectedViewId) {
+    elements.historyList.innerHTML = "<div class=\"status\">Select a view to see its history.</div>";
+    return;
+  }
+  
+  const history = getViewHistory(state.selectedViewId);
+  
+  if (!history.length) {
+    elements.historyList.innerHTML = "<div class=\"status\">No version history available for this view.</div>";
+    return;
+  }
+  
+  history.forEach((version, index) => {
+    const card = document.createElement("div");
+    card.className = "history-card";
+    
+    const timestamp = new Date(version.timestamp);
+    const formattedDate = timestamp.toLocaleString("de-DE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    
+    card.innerHTML = `
+      <div class="history-header">
+        <div class="history-info">
+          <strong>Version ${history.length - index}</strong>
+          <span class="history-timestamp">${formattedDate}</span>
+        </div>
+        <div class="history-actions">
+          <button class="secondary small" data-action="restore" data-index="${index}">Restore</button>
+          <button class="ghost small" data-action="compare" data-index="${index}">Compare</button>
+          <button class="ghost small" data-action="view" data-index="${index}">View JSON</button>
+        </div>
+      </div>
+      <div class="history-summary">
+        ${version.data.name || "Unnamed"} · ${version.data.scheduleStrategy || "Unknown"}
+      </div>
+    `;
+    
+    card.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const action = btn.dataset.action;
+        const idx = parseInt(btn.dataset.index, 10);
+        handleHistoryAction(action, idx);
+      });
+    });
+    
+    elements.historyList.appendChild(card);
+  });
+}
+
+function handleHistoryAction(action, index) {
+  const history = getViewHistory(state.selectedViewId);
+  if (!history[index]) return;
+  
+  const version = history[index];
+  
+  if (action === "restore") {
+    if (confirm("Restore this version? Your current draft will be replaced.")) {
+      applyViewToDraft(version.data);
+      alert("Version restored to draft. Click 'Update view' to save.");
+    }
+  } else if (action === "compare") {
+    showComparisonModal(version.data, state.responses.response);
+  } else if (action === "view") {
+    showJsonModal(version.data);
+  }
+}
+
+function showJsonModal(data) {
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Version Data</h3>
+        <button class="ghost small" id="closeJsonModal">Close</button>
+      </div>
+      <pre class="code-block">${JSON.stringify(data, null, 2)}</pre>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  document.getElementById("closeJsonModal").addEventListener("click", () => {
+    modal.remove();
+  });
+  
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
+function showComparisonModal(oldVersion, currentVersion) {
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+  modal.innerHTML = `
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3>Version Comparison</h3>
+        <button class="ghost small" id="closeCompareModal">Close</button>
+      </div>
+      <div class="comparison-container">
+        <div class="comparison-column">
+          <h4>Selected Version</h4>
+          <pre class="code-block">${JSON.stringify(oldVersion, null, 2)}</pre>
+        </div>
+        <div class="comparison-column">
+          <h4>Current Version</h4>
+          <pre class="code-block">${JSON.stringify(currentVersion, null, 2)}</pre>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  document.getElementById("closeCompareModal").addEventListener("click", () => {
+    modal.remove();
+  });
+  
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
+// ========== End View History Management ==========
 
 async function apiRequest(path, options = {}) {
   if (!state.settings.apiKey || !state.settings.project) {
@@ -818,6 +1010,10 @@ function setResponseJson(target, data) {
 function switchEditorTab(tabName) {
   editorTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
   editorTabContents.forEach((content) => content.classList.toggle("active", content.id === `tab-${tabName}`));
+  
+  if (tabName === "history") {
+    renderHistory();
+  }
 }
 
 function switchDataTab(tabName) {
@@ -859,6 +1055,7 @@ async function loadSelectedView() {
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
     applyViewToDraft(data);
+    renderHistory();
     switchEditorTab("draft");
   } catch (error) {
     setResponseJson(elements.responseJson, error);
@@ -922,6 +1119,12 @@ async function updateView() {
   if (!state.selectedViewId) return;
   try {
     showLoading();
+    
+    // Save current version to history before updating
+    if (state.responses.response && Object.keys(state.responses.response).length > 0) {
+      addVersionToHistory(state.selectedViewId, state.responses.response);
+    }
+    
     const requestBody = buildRequestBody();
     const data = await apiRequest(`/search/views/${state.selectedViewId}`, {
       method: "PUT",
@@ -931,6 +1134,7 @@ async function updateView() {
     setResponseJson(elements.responseJson, data);
     updateEditorViewTitle();
     await loadViews();
+    renderHistory();
   } catch (error) {
     setResponseJson(elements.responseJson, error);
     hideLoading();
@@ -1088,6 +1292,7 @@ function wireEvents() {
 
 function init() {
   loadSettings();
+  loadViewHistory();
   renderDraft();
   
   // Initialize tab groups before wireEvents
