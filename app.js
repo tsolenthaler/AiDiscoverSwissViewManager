@@ -1509,6 +1509,10 @@ async function loadSelectedView() {
     setResponseJson(elements.responseJson, data);
     applyViewToDraft(data);
     renderHistory();
+    const editorPanel = document.querySelector("details.panel.wide");
+    if (editorPanel) {
+      editorPanel.open = true;
+    }
     switchEditorTab("draft");
   } catch (error) {
     setResponseJson(elements.responseJson, error);
