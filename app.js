@@ -1120,23 +1120,32 @@ async function updateView() {
   try {
     showLoading();
     
-    // Save current version to history before updating
-    if (state.responses.response && Object.keys(state.responses.response).length > 0) {
-      addVersionToHistory(state.selectedViewId, state.responses.response);
-    }
-    
     const requestBody = buildRequestBody();
     const data = await apiRequest(`/search/views/${state.selectedViewId}`, {
       method: "PUT",
       body: JSON.stringify(requestBody),
     });
+    
+    // Only save version to history after successful update (status 200)
+    if (state.responses.response && Object.keys(state.responses.response).length > 0) {
+      addVersionToHistory(state.selectedViewId, state.responses.response);
+    }
+    
     state.responses.response = data;
     setResponseJson(elements.responseJson, data);
     updateEditorViewTitle();
     await loadViews();
     renderHistory();
   } catch (error) {
-    setResponseJson(elements.responseJson, error);
+    // Show error message when status is not 200
+    const errorMessage = {
+      error: "Update failed",
+      status: error.status || "unknown",
+      message: error.message || "Request failed",
+      details: error.data || error
+    };
+    setResponseJson(elements.responseJson, errorMessage);
+    alert(`View update failed: ${error.message || "Request failed"} (Status: ${error.status || "unknown"})`);
     hideLoading();
   }
 }
