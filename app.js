@@ -488,20 +488,6 @@ function renderHistory() {
     elements.historyList.innerHTML = "<div class=\"status\">No version history available for this view.</div>";
     return;
   }
-
-  const actionsRow = document.createElement("div");
-  actionsRow.className = "button-row";
-  actionsRow.style.marginBottom = "12px";
-
-  const compareAllBtn = document.createElement("button");
-  compareAllBtn.className = "secondary";
-  compareAllBtn.textContent = "Compare all with current view";
-  compareAllBtn.addEventListener("click", () => {
-    showCompareAllWithCurrentModal(history);
-  });
-
-  actionsRow.appendChild(compareAllBtn);
-  elements.historyList.appendChild(actionsRow);
   
   history.forEach((version, index) => {
     const card = document.createElement("div");
@@ -526,7 +512,6 @@ function renderHistory() {
         <div class="history-actions">
           <button class="secondary small" data-action="restore" data-index="${index}">Restore</button>
           <button class="ghost small" data-action="compare" data-index="${index}">Compare</button>
-          <button class="ghost small" data-action="compare-current" data-index="${index}">With current</button>
           <button class="ghost small" data-action="view" data-index="${index}">View JSON</button>
         </div>
       </div>
