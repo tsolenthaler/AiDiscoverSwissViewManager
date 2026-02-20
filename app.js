@@ -729,22 +729,6 @@ function updateFacetField(index, field, value) {
 function buildRequestBody() {
   const searchRequest = {
     project: [state.settings.project],
-    facets: state.draft.facets
-      .map((facet) => {
-        const mapped = {
-          name: normalizeFacetName(facet.name),
-          responseNames: facet.responseNames || undefined,
-          filterValues: facet.filterValues?.length ? facet.filterValues : undefined,
-          additionalType: facet.additionalType?.length ? facet.additionalType : undefined,
-          orderBy: normalizeFacetOrderBy(facet.orderBy),
-          orderDirection: facet.orderDirection || undefined,
-          count: facet.count || undefined,
-          scope: facet.scope || undefined,
-          excludeRedundant: facet.excludeRedundant || undefined,
-        };
-        return mapped;
-      })
-      .filter((facet) => facet.name),
   };
 
   state.draft.filters.forEach((filter) => {
@@ -755,6 +739,23 @@ function buildRequestBody() {
       searchRequest[filter.type] = filter.values;
     }
   });
+
+  searchRequest.facets = state.draft.facets
+    .map((facet) => {
+      const mapped = {
+        name: normalizeFacetName(facet.name),
+        responseNames: facet.responseNames || undefined,
+        filterValues: facet.filterValues?.length ? facet.filterValues : undefined,
+        additionalType: facet.additionalType?.length ? facet.additionalType : undefined,
+        orderBy: normalizeFacetOrderBy(facet.orderBy),
+        orderDirection: facet.orderDirection || undefined,
+        count: facet.count || undefined,
+        scope: facet.scope || undefined,
+        excludeRedundant: facet.excludeRedundant || undefined,
+      };
+      return mapped;
+    })
+    .filter((facet) => facet.name);
 
   return {
     name: state.draft.name,
