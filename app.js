@@ -559,10 +559,6 @@ function handleHistoryAction(action, index) {
       alert("Version restored to draft. Click 'Update view' to save.");
     }
   } else if (action === "compare") {
-    if (history.length < 2) {
-      alert("At least two history versions are required for comparison.");
-      return;
-    }
     showCompareSelectionModal(history, index);
   } else if (action === "compare-current") {
     compareHistoryVersionWithCurrent(history, index);
@@ -578,35 +574,37 @@ function getHistoryVersionLabel(history, index) {
   return `Version ${versionNumber} · ${timestamp}`;
 }
 
-function getCurrentQueriedViewData() {
+function getCurrentViewForComparison() {
+  const currentDraftView = buildRequestBody();
+  if (currentDraftView) {
+    return {
+      data: currentDraftView,
+      label: "Current draft view",
+    };
+  }
+
   if (state.responses.response && Object.keys(state.responses.response).length > 0) {
-    return state.responses.response;
+    return {
+      data: state.responses.response,
+      label: "Current loaded view",
+    };
   }
 
-  if (!state.selectedViewId) {
-    return null;
-  }
-
-  const selectedView = state.views.find((view) => {
-    const viewId = getViewId(view);
-    return viewId != null && String(viewId) === String(state.selectedViewId);
-  });
-
-  return selectedView || null;
+  return null;
 }
 
 function compareHistoryVersionWithCurrent(history, index) {
-  const currentView = getCurrentQueriedViewData();
+  const currentView = getCurrentViewForComparison();
 
   if (!currentView) {
-    alert("No current queried view available. Please load the selected view first.");
+    alert("No current view available for comparison.");
     return;
   }
 
   const selectedVersion = history[index];
-  showComparisonModal(selectedVersion.data, currentView, {
+  showComparisonModal(selectedVersion.data, currentView.data, {
     olderLabel: getHistoryVersionLabel(history, index),
-    newerLabel: "Current queried view",
+    newerLabel: currentView.label,
   });
 }
 
@@ -630,10 +628,10 @@ function getDiffStats(oldVersion, newVersion) {
 }
 
 function showCompareAllWithCurrentModal(history) {
-  const currentView = getCurrentQueriedViewData();
+  const currentView = getCurrentViewForComparison();
 
   if (!currentView) {
-    alert("No current queried view available. Please load the selected view first.");
+    alert("No current view available for comparison.");
     return;
   }
 
@@ -642,7 +640,7 @@ function showCompareAllWithCurrentModal(history) {
 
   const listHtml = history
     .map((version, index) => {
-      const stats = getDiffStats(version.data, currentView);
+      const stats = getDiffStats(version.data, currentView.data);
       return `
         <div class="history-card" style="margin-bottom: 10px;">
           <div class="history-header">
@@ -662,7 +660,7 @@ function showCompareAllWithCurrentModal(history) {
   modal.innerHTML = `
     <div class="modal-content">
       <div class="modal-header">
-        <h3>All history versions vs current view</h3>
+        <h3>All history versions vs ${currentView.label}</h3>
         <button class="ghost small" id="closeCompareAllModal">Close</button>
       </div>
       <div>${listHtml || "<div class='status'>No versions available.</div>"}</div>
@@ -696,12 +694,15 @@ function showCompareAllWithCurrentModal(history) {
 }
 
 function showCompareSelectionModal(history, preselectedIndex) {
+  const currentView = getCurrentViewForComparison();
   const modal = document.createElement("div");
   modal.className = "modal-overlay";
 
-  const optionsHtml = history
+  const historyOptionsHtml = history
     .map((_, idx) => `<option value="${idx}">${getHistoryVersionLabel(history, idx)}</option>`)
     .join("");
+  const currentOptionHtml = currentView ? `<option value="current">${currentView.label}</option>` : "";
+  const optionsHtml = `${currentOptionHtml}${historyOptionsHtml}`;
 
   const defaultNewerIndex = preselectedIndex;
   const defaultOlderIndex =
@@ -744,21 +745,68 @@ function showCompareSelectionModal(history, preselectedIndex) {
   document.getElementById("closeCompareSelectionModal").addEventListener("click", closeModal);
 
   document.getElementById("runVersionCompareBtn").addEventListener("click", () => {
-    const indexA = parseInt(selectA.value, 10);
-    const indexB = parseInt(selectB.value, 10);
+    const selectedA = selectA.value;
+    const selectedB = selectB.value;
 
-    if (Number.isNaN(indexA) || Number.isNaN(indexB)) {
+    if (!selectedA || !selectedB) {
       alert("Please select two versions.");
       return;
     }
 
-    if (indexA === indexB) {
+    if (selectedA === selectedB) {
       alert("Please select two different versions.");
       return;
     }
 
-    const olderIndex = Math.max(indexA, indexB);
-    const newerIndex = Math.min(indexA, indexB);
+    const resolveSelection = (selectionValue) => {
+      if (selectionValue === "current") {
+        if (!currentView) {
+          return null;
+        }
+        return {
+          data: currentView.data,
+          label: currentView.label,
+          sortIndex: -1,
+          isCurrent: true,
+        };
+      }
+
+      const parsedIndex = parseInt(selectionValue, 10);
+      if (Number.isNaN(parsedIndex) || !history[parsedIndex]) {
+        return null;
+      }
+
+      return {
+        data: history[parsedIndex].data,
+        label: getHistoryVersionLabel(history, parsedIndex),
+        sortIndex: parsedIndex,
+        isCurrent: false,
+      };
+    };
+
+    const selectionA = resolveSelection(selectedA);
+    const selectionB = resolveSelection(selectedB);
+
+    if (!selectionA || !selectionB) {
+      alert("Invalid selection.");
+      return;
+    }
+
+    if (selectionA.isCurrent || selectionB.isCurrent) {
+      const olderSelection = selectionA.sortIndex > selectionB.sortIndex ? selectionA : selectionB;
+      const newerSelection = olderSelection === selectionA ? selectionB : selectionA;
+
+      closeModal();
+
+      showComparisonModal(olderSelection.data, newerSelection.data, {
+        olderLabel: olderSelection.label,
+        newerLabel: newerSelection.label,
+      });
+      return;
+    }
+
+    const olderIndex = Math.max(selectionA.sortIndex, selectionB.sortIndex);
+    const newerIndex = Math.min(selectionA.sortIndex, selectionB.sortIndex);
 
     const olderVersion = history[olderIndex];
     const newerVersion = history[newerIndex];
