@@ -196,6 +196,25 @@ function renderLivePreview() {
         } else {
           cell.textContent = "-";
         }
+      } else if (key === "identifier") {
+        if (value && item.type) {
+          const link = document.createElement("a");
+          link.href = `https://partner.discover.swiss/infocenter/details/${String(item.type)}/${String(value)}`;
+          link.textContent = String(value);
+          link.target = "_blank";
+          link.style.color = "var(--primary, #0066cc)";
+          link.style.textDecoration = "none";
+          link.style.cursor = "pointer";
+          link.addEventListener("mouseenter", () => {
+            link.style.textDecoration = "underline";
+          });
+          link.addEventListener("mouseleave", () => {
+            link.style.textDecoration = "none";
+          });
+          cell.appendChild(link);
+        } else {
+          cell.textContent = "-";
+        }
       } else if (value === null || value === undefined) {
         cell.textContent = "-";
       } else if (typeof value === "object") {
