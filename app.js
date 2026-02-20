@@ -82,7 +82,6 @@ const elements = {
   deleteViewBtn: document.getElementById("deleteViewBtn"),
   draftName: document.getElementById("draftName"),
   draftDescription: document.getElementById("draftDescription"),
-  draftSchedule: document.getElementById("draftSchedule"),
   addFilterBtn: document.getElementById("addFilterBtn"),
   addCopiedFilterBtn: document.getElementById("addCopiedFilterBtn"),
   filterList: document.getElementById("filterList"),
@@ -1259,7 +1258,6 @@ function updateEditorViewTitle() {
 function renderDraft() {
   elements.draftName.value = state.draft.name;
   elements.draftDescription.value = state.draft.description;
-  elements.draftSchedule.value = state.draft.scheduleStrategy;
   updateCopiedInsertButtonsVisibility();
   renderFilters();
   renderFacets();
@@ -1579,7 +1577,6 @@ function buildRequestBody() {
   return {
     name: state.draft.name,
     description: state.draft.description,
-    scheduleStrategy: state.draft.scheduleStrategy,
     searchRequest,
   };
 }
@@ -1877,11 +1874,6 @@ function wireEvents() {
 
   elements.draftDescription.addEventListener("input", () => {
     state.draft.description = elements.draftDescription.value;
-    updateRequestJson();
-  });
-
-  elements.draftSchedule.addEventListener("change", () => {
-    state.draft.scheduleStrategy = elements.draftSchedule.value;
     updateRequestJson();
   });
 
