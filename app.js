@@ -450,6 +450,20 @@ function renderHistory() {
     elements.historyList.innerHTML = "<div class=\"status\">No version history available for this view.</div>";
     return;
   }
+
+  const actionsRow = document.createElement("div");
+  actionsRow.className = "button-row";
+  actionsRow.style.marginBottom = "12px";
+
+  const compareAllBtn = document.createElement("button");
+  compareAllBtn.className = "secondary";
+  compareAllBtn.textContent = "Compare all with current view";
+  compareAllBtn.addEventListener("click", () => {
+    showCompareAllWithCurrentModal(history);
+  });
+
+  actionsRow.appendChild(compareAllBtn);
+  elements.historyList.appendChild(actionsRow);
   
   history.forEach((version, index) => {
     const card = document.createElement("div");
@@ -474,6 +488,7 @@ function renderHistory() {
         <div class="history-actions">
           <button class="secondary small" data-action="restore" data-index="${index}">Restore</button>
           <button class="ghost small" data-action="compare" data-index="${index}">Compare</button>
+          <button class="ghost small" data-action="compare-current" data-index="${index}">With current</button>
           <button class="ghost small" data-action="view" data-index="${index}">View JSON</button>
         </div>
       </div>
@@ -511,6 +526,8 @@ function handleHistoryAction(action, index) {
       return;
     }
     showCompareSelectionModal(history, index);
+  } else if (action === "compare-current") {
+    compareHistoryVersionWithCurrent(history, index);
   } else if (action === "view") {
     showJsonModal(version.data);
   }
@@ -521,6 +538,123 @@ function getHistoryVersionLabel(history, index) {
   const versionNumber = history.length - index;
   const timestamp = new Date(version.timestamp).toLocaleString("de-DE");
   return `Version ${versionNumber} · ${timestamp}`;
+}
+
+function getCurrentQueriedViewData() {
+  if (state.responses.response && Object.keys(state.responses.response).length > 0) {
+    return state.responses.response;
+  }
+
+  if (!state.selectedViewId) {
+    return null;
+  }
+
+  const selectedView = state.views.find((view) => {
+    const viewId = getViewId(view);
+    return viewId != null && String(viewId) === String(state.selectedViewId);
+  });
+
+  return selectedView || null;
+}
+
+function compareHistoryVersionWithCurrent(history, index) {
+  const currentView = getCurrentQueriedViewData();
+
+  if (!currentView) {
+    alert("No current queried view available. Please load the selected view first.");
+    return;
+  }
+
+  const selectedVersion = history[index];
+  showComparisonModal(selectedVersion.data, currentView, {
+    olderLabel: getHistoryVersionLabel(history, index),
+    newerLabel: "Current queried view",
+  });
+}
+
+function getDiffStats(oldVersion, newVersion) {
+  const oldLines = JSON.stringify(oldVersion || {}, null, 2).split("\n");
+  const newLines = JSON.stringify(newVersion || {}, null, 2).split("\n");
+  const diffRows = computeLineDiff(oldLines, newLines);
+
+  let added = 0;
+  let removed = 0;
+
+  diffRows.forEach((row) => {
+    if (row.type === "added") {
+      added += 1;
+    } else if (row.type === "removed") {
+      removed += 1;
+    }
+  });
+
+  return { added, removed, changed: added + removed };
+}
+
+function showCompareAllWithCurrentModal(history) {
+  const currentView = getCurrentQueriedViewData();
+
+  if (!currentView) {
+    alert("No current queried view available. Please load the selected view first.");
+    return;
+  }
+
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+
+  const listHtml = history
+    .map((version, index) => {
+      const stats = getDiffStats(version.data, currentView);
+      return `
+        <div class="history-card" style="margin-bottom: 10px;">
+          <div class="history-header">
+            <div class="history-info">
+              <strong>${getHistoryVersionLabel(history, index)}</strong>
+              <span class="history-timestamp">Changes: ${stats.changed} ( +${stats.added} / -${stats.removed} )</span>
+            </div>
+            <div class="history-actions">
+              <button class="ghost small" data-action="compare-current" data-index="${index}">Open Diff</button>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>All history versions vs current view</h3>
+        <button class="ghost small" id="closeCompareAllModal">Close</button>
+      </div>
+      <div>${listHtml || "<div class='status'>No versions available.</div>"}</div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => {
+    modal.remove();
+  };
+
+  document.getElementById("closeCompareAllModal").addEventListener("click", closeModal);
+
+  modal.querySelectorAll("button[data-action='compare-current']").forEach((button) => {
+    button.addEventListener("click", () => {
+      const index = parseInt(button.dataset.index, 10);
+      if (Number.isNaN(index) || !history[index]) {
+        return;
+      }
+      closeModal();
+      compareHistoryVersionWithCurrent(history, index);
+    });
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
 }
 
 function showCompareSelectionModal(history, preselectedIndex) {
@@ -553,6 +687,7 @@ function showCompareSelectionModal(history, preselectedIndex) {
       </div>
       <div class="button-row">
         <button class="secondary" id="runVersionCompareBtn">Compare selected versions</button>
+        <button class="ghost" id="runCompareWithCurrentBtn">Compare selected with current</button>
       </div>
     </div>
   `;
@@ -596,6 +731,18 @@ function showCompareSelectionModal(history, preselectedIndex) {
       olderLabel: getHistoryVersionLabel(history, olderIndex),
       newerLabel: getHistoryVersionLabel(history, newerIndex),
     });
+  });
+
+  document.getElementById("runCompareWithCurrentBtn").addEventListener("click", () => {
+    const selectedIndex = parseInt(selectB.value, 10);
+
+    if (Number.isNaN(selectedIndex) || !history[selectedIndex]) {
+      alert("Please select a version to compare with current.");
+      return;
+    }
+
+    closeModal();
+    compareHistoryVersionWithCurrent(history, selectedIndex);
   });
 
   modal.addEventListener("click", (e) => {
