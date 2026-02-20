@@ -1437,7 +1437,10 @@ function renderFacets() {
   state.draft.facets.forEach((facet, index) => {
     const card = document.createElement("details");
     card.className = "facet-card";
-    const headerTitle = facet.name ? `Facet ${facet.name}` : `Facet ${index + 1}`;
+    const responseNameDe = String(facet.responseNames?.de || "").trim();
+    const headerTitle = facet.name
+      ? `Facet ${facet.name}${responseNameDe ? ` - ${responseNameDe}` : ""}`
+      : `Facet ${index + 1}`;
     const facetName = normalizeFacetName(facet.name);
     const isKnownFacetName = FACET_NAME_OPTIONS.includes(facetName);
     const unknownFacetOption = isKnownFacetName
