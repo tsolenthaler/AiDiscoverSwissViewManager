@@ -495,38 +495,99 @@ function handleHistoryAction(action, index) {
       alert("At least two history versions are required for comparison.");
       return;
     }
-
-    const selectedVersionNumber = history.length - index;
-    const selectedTimestamp = new Date(version.timestamp).toLocaleString("de-DE");
-
-    let olderVersion;
-    let newerVersion;
-    let olderVersionNumber;
-    let newerVersionNumber;
-
-    if (index < history.length - 1) {
-      olderVersion = history[index + 1];
-      newerVersion = version;
-      olderVersionNumber = history.length - (index + 1);
-      newerVersionNumber = selectedVersionNumber;
-    } else {
-      olderVersion = version;
-      newerVersion = history[index - 1];
-      olderVersionNumber = selectedVersionNumber;
-      newerVersionNumber = history.length - (index - 1);
-    }
-
-    const olderTimestamp = new Date(olderVersion.timestamp).toLocaleString("de-DE");
-    const newerTimestamp = new Date(newerVersion.timestamp).toLocaleString("de-DE");
-
-    showComparisonModal(olderVersion.data, newerVersion.data, {
-      olderLabel: `Version ${olderVersionNumber} · ${olderTimestamp}`,
-      newerLabel: `Version ${newerVersionNumber} · ${newerTimestamp}`,
-      selectedLabel: `Selected: Version ${selectedVersionNumber} · ${selectedTimestamp}`,
-    });
+    showCompareSelectionModal(history, index);
   } else if (action === "view") {
     showJsonModal(version.data);
   }
+}
+
+function getHistoryVersionLabel(history, index) {
+  const version = history[index];
+  const versionNumber = history.length - index;
+  const timestamp = new Date(version.timestamp).toLocaleString("de-DE");
+  return `Version ${versionNumber} · ${timestamp}`;
+}
+
+function showCompareSelectionModal(history, preselectedIndex) {
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+
+  const optionsHtml = history
+    .map((_, idx) => `<option value="${idx}">${getHistoryVersionLabel(history, idx)}</option>`)
+    .join("");
+
+  const defaultNewerIndex = preselectedIndex;
+  const defaultOlderIndex =
+    preselectedIndex < history.length - 1 ? preselectedIndex + 1 : preselectedIndex - 1;
+
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Select versions to compare</h3>
+        <button class="ghost small" id="closeCompareSelectionModal">Close</button>
+      </div>
+      <div class="grid-2" style="margin-bottom: 16px;">
+        <label>
+          <span>Version A</span>
+          <select id="compareVersionA">${optionsHtml}</select>
+        </label>
+        <label>
+          <span>Version B</span>
+          <select id="compareVersionB">${optionsHtml}</select>
+        </label>
+      </div>
+      <div class="button-row">
+        <button class="secondary" id="runVersionCompareBtn">Compare selected versions</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const selectA = document.getElementById("compareVersionA");
+  const selectB = document.getElementById("compareVersionB");
+  selectA.value = String(defaultOlderIndex);
+  selectB.value = String(defaultNewerIndex);
+
+  const closeModal = () => {
+    modal.remove();
+  };
+
+  document.getElementById("closeCompareSelectionModal").addEventListener("click", closeModal);
+
+  document.getElementById("runVersionCompareBtn").addEventListener("click", () => {
+    const indexA = parseInt(selectA.value, 10);
+    const indexB = parseInt(selectB.value, 10);
+
+    if (Number.isNaN(indexA) || Number.isNaN(indexB)) {
+      alert("Please select two versions.");
+      return;
+    }
+
+    if (indexA === indexB) {
+      alert("Please select two different versions.");
+      return;
+    }
+
+    const olderIndex = Math.max(indexA, indexB);
+    const newerIndex = Math.min(indexA, indexB);
+
+    const olderVersion = history[olderIndex];
+    const newerVersion = history[newerIndex];
+
+    closeModal();
+
+    showComparisonModal(olderVersion.data, newerVersion.data, {
+      olderLabel: getHistoryVersionLabel(history, olderIndex),
+      newerLabel: getHistoryVersionLabel(history, newerIndex),
+    });
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
 }
 
 function showJsonModal(data) {
