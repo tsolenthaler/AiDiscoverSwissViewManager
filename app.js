@@ -1167,6 +1167,7 @@ function renderViews() {
       selectViewById(String(viewId), {
         showNotFoundAlert: false,
         ensureViewsLoaded: false,
+        historyMode: "push",
       }).catch((error) => {
         console.error("Error selecting view:", error);
       });
@@ -1626,12 +1627,17 @@ function setResponseJson(target, data) {
   target.textContent = data ? JSON.stringify(data, null, 2) : "";
 }
 
-function syncViewIdInUrl(viewId) {
+function syncViewIdInUrl(viewId, options = {}) {
+  const { historyMode = "replace" } = options;
   const url = new URL(window.location.href);
   if (viewId == null || String(viewId).trim() === "") {
     url.searchParams.delete("viewId");
   } else {
     url.searchParams.set("viewId", String(viewId));
+  }
+  if (historyMode === "push") {
+    window.history.pushState({}, "", url.toString());
+    return;
   }
   window.history.replaceState({}, "", url.toString());
 }
@@ -1654,6 +1660,7 @@ async function selectViewById(viewId, options = {}) {
   const {
     showNotFoundAlert = false,
     ensureViewsLoaded = true,
+    historyMode = "replace",
   } = options;
 
   const normalizedViewId = typeof viewId === "string" ? viewId.trim() : "";
@@ -1682,7 +1689,7 @@ async function selectViewById(viewId, options = {}) {
   }
 
   state.selectedViewId = getViewId(matchedView);
-  syncViewIdInUrl(state.selectedViewId);
+  syncViewIdInUrl(state.selectedViewId, { historyMode });
   renderViews();
   updateButtonStates();
   updateEditorViewTitle();
@@ -1698,6 +1705,7 @@ async function tryLoadViewFromDeepLink() {
   await selectViewById(requestedViewId, {
     showNotFoundAlert: true,
     ensureViewsLoaded: true,
+    historyMode: "replace",
   });
 }
 
@@ -1711,6 +1719,7 @@ function handleBrowserNavigation() {
   selectViewById(requestedViewId, {
     showNotFoundAlert: false,
     ensureViewsLoaded: true,
+    historyMode: "replace",
   }).catch((error) => {
     console.error("Error restoring view from browser navigation:", error);
   });
@@ -1903,7 +1912,7 @@ async function duplicateView() {
     const createdViewId = getViewId(createdView);
     if (createdViewId != null) {
       state.selectedViewId = createdViewId;
-      syncViewIdInUrl(state.selectedViewId);
+      syncViewIdInUrl(state.selectedViewId, { historyMode: "push" });
       updateEditorViewTitle();
       renderViews();
       updateButtonStates();
