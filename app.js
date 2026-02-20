@@ -28,6 +28,7 @@ const FACET_NAME_OPTIONS = [
   "containedInPlace/id",
   "categoryTree",
   "combinedTypeTree",
+  "combinedType",
   "season",
   "openingHoursSpecification/dayOfWeek",
   "priceRange",
@@ -43,7 +44,14 @@ const FACET_NAME_OPTIONS = [
 const FACET_ORDER_BY_OPTIONS = ["name", "count"];
 
 function normalizeFacetName(value) {
-  return FACET_NAME_OPTIONS.includes(value) ? value : FACET_NAME_OPTIONS[0];
+  if (typeof value !== "string") {
+    return FACET_NAME_OPTIONS[0];
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return FACET_NAME_OPTIONS[0];
+  }
+  return trimmed;
 }
 
 function normalizeFacetOrderBy(value) {
@@ -1399,6 +1407,17 @@ function renderFacets() {
     const card = document.createElement("details");
     card.className = "facet-card";
     const headerTitle = facet.name ? `Facet ${facet.name}` : `Facet ${index + 1}`;
+    const facetName = normalizeFacetName(facet.name);
+    const isKnownFacetName = FACET_NAME_OPTIONS.includes(facetName);
+    const unknownFacetOption = isKnownFacetName
+      ? ""
+      : `<option value="${escapeHtml(facetName)}" selected>⚠ Unknown (API): ${escapeHtml(facetName)}</option>`;
+    const facetNameOptions = FACET_NAME_OPTIONS
+      .map(
+        (name) =>
+          `<option value="${escapeHtml(name)}" ${facetName === name ? "selected" : ""}>${escapeHtml(name)}</option>`
+      )
+      .join("");
     card.innerHTML = `
       <summary class="card-summary">
         <strong>${headerTitle}</strong>
@@ -1413,19 +1432,8 @@ function renderFacets() {
         <label>
           <span>Name</span>
           <select data-field="name">
-            <option value="containedInPlace/id" ${normalizeFacetName(facet.name) === "containedInPlace/id" ? "selected" : ""}>containedInPlace/id</option>
-            <option value="categoryTree" ${normalizeFacetName(facet.name) === "categoryTree" ? "selected" : ""}>categoryTree</option>
-            <option value="combinedTypeTree" ${normalizeFacetName(facet.name) === "combinedTypeTree" ? "selected" : ""}>combinedTypeTree</option>
-            <option value="season" ${normalizeFacetName(facet.name) === "season" ? "selected" : ""}>season</option>
-            <option value="openingHoursSpecification/dayOfWeek" ${normalizeFacetName(facet.name) === "openingHoursSpecification/dayOfWeek" ? "selected" : ""}>openingHoursSpecification/dayOfWeek</option>
-            <option value="priceRange" ${normalizeFacetName(facet.name) === "priceRange" ? "selected" : ""}>priceRange</option>
-            <option value="award" ${normalizeFacetName(facet.name) === "award" ? "selected" : ""}>award</option>
-            <option value="tag" ${normalizeFacetName(facet.name) === "tag" ? "selected" : ""}>tag</option>
-            <option value="leafType" ${normalizeFacetName(facet.name) === "leafType" ? "selected" : ""}>leafType</option>
-            <option value="amenityFeature" ${normalizeFacetName(facet.name) === "amenityFeature" ? "selected" : ""}>amenityFeature</option>
-            <option value="starRating/name" ${normalizeFacetName(facet.name) === "starRating/name" ? "selected" : ""}>starRating/name</option>
-            <option value="address/addressLocality" ${normalizeFacetName(facet.name) === "address/addressLocality" ? "selected" : ""}>address/addressLocality</option>
-            <option value="address/postalCode" ${normalizeFacetName(facet.name) === "address/postalCode" ? "selected" : ""}>address/postalCode</option>
+            ${unknownFacetOption}
+            ${facetNameOptions}
           </select>
         </label>
         <label>
