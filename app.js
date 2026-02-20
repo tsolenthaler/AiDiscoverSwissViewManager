@@ -1164,12 +1164,12 @@ function renderViews() {
       if (!viewId) {
         return;
       }
-      state.selectedViewId = viewId;
-      syncViewIdInUrl(state.selectedViewId);
-      renderViews();
-      updateButtonStates();
-      updateEditorViewTitle();
-      loadSelectedView();
+      selectViewById(String(viewId), {
+        showNotFoundAlert: false,
+        ensureViewsLoaded: false,
+      }).catch((error) => {
+        console.error("Error selecting view:", error);
+      });
     });
     elements.viewsList.appendChild(item);
   });
@@ -1650,21 +1650,34 @@ function hasLoadedConfiguration() {
   return !!(String(state.settings.apiKey || "").trim() && String(state.settings.project || "").trim());
 }
 
-async function tryLoadViewFromDeepLink() {
-  const requestedViewId = getRequestedViewIdFromUrl();
-  if (!requestedViewId || !hasLoadedConfiguration()) {
+async function selectViewById(viewId, options = {}) {
+  const {
+    showNotFoundAlert = false,
+    ensureViewsLoaded = true,
+  } = options;
+
+  const normalizedViewId = typeof viewId === "string" ? viewId.trim() : "";
+  if (!normalizedViewId) {
+    state.selectedViewId = null;
+    renderViews();
+    updateButtonStates();
+    updateEditorViewTitle();
     return;
   }
 
-  await loadViews();
+  if (ensureViewsLoaded) {
+    await loadViews();
+  }
 
   const matchedView = state.views.find((view) => {
-    const viewId = getViewId(view);
-    return viewId != null && String(viewId) === requestedViewId;
+    const currentViewId = getViewId(view);
+    return currentViewId != null && String(currentViewId) === normalizedViewId;
   });
 
   if (!matchedView) {
-    alert("Dies View wurde nicht gefunden. Evlt. stimmt die Konfiguration nicht");
+    if (showNotFoundAlert) {
+      alert("Dies View wurde nicht gefunden. Evlt. stimmt die Konfiguration nicht");
+    }
     return;
   }
 
@@ -1674,6 +1687,33 @@ async function tryLoadViewFromDeepLink() {
   updateButtonStates();
   updateEditorViewTitle();
   await loadSelectedView();
+}
+
+async function tryLoadViewFromDeepLink() {
+  const requestedViewId = getRequestedViewIdFromUrl();
+  if (!requestedViewId || !hasLoadedConfiguration()) {
+    return;
+  }
+
+  await selectViewById(requestedViewId, {
+    showNotFoundAlert: true,
+    ensureViewsLoaded: true,
+  });
+}
+
+function handleBrowserNavigation() {
+  const requestedViewId = getRequestedViewIdFromUrl();
+
+  if (!hasLoadedConfiguration()) {
+    return;
+  }
+
+  selectViewById(requestedViewId, {
+    showNotFoundAlert: false,
+    ensureViewsLoaded: true,
+  }).catch((error) => {
+    console.error("Error restoring view from browser navigation:", error);
+  });
 }
 
 function switchEditorTab(tabName) {
@@ -2035,6 +2075,7 @@ function init() {
   switchDataTab("response");
   
   wireEvents();
+  window.addEventListener("popstate", handleBrowserNavigation);
   
   // Check if there's a draft from the chatbot
   const chatbotDraft = localStorage.getItem("aiviewmanager.chatbot.draft");
