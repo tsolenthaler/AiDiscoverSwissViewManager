@@ -4,8 +4,6 @@ const CURRENT_CONFIG_KEY = "aiviewmanager.current_config";
 const DEFAULT_CONFIG = {
   apiKey: "",
   project: "",
-  openaiKey: "",
-  openaiModel: "gpt-4o-mini",
   env: "test",
 };
 
@@ -23,8 +21,6 @@ const elements = {
   settingsForm: document.getElementById("settingsForm"),
   dsApiKey: document.getElementById("dsApiKey"),
   dsProject: document.getElementById("dsProject"),
-  openaiKey: document.getElementById("openaiKey"),
-  openaiModel: document.getElementById("openaiModel"),
   settingsStatus: document.getElementById("settingsStatus"),
   deleteConfigBtn: document.getElementById("deleteConfigBtn"),
   loadingOverlay: document.getElementById("loadingOverlay"),
@@ -54,8 +50,6 @@ function loadAllConfigs() {
             name: "Default Configuration",
             apiKey: oldSettingsObj.apiKey || "",
             project: oldSettingsObj.project || "",
-            openaiKey: oldSettingsObj.openaiKey || "",
-            openaiModel: oldSettingsObj.openaiModel || "gpt-4o-mini",
             env: oldSettingsObj.env || "test",
           };
           saveAllConfigs();
@@ -135,8 +129,6 @@ function renderForm() {
   elements.configName.value = state.currentConfig.name || "";
   elements.dsApiKey.value = state.currentConfig.apiKey || "";
   elements.dsProject.value = state.currentConfig.project || "";
-  elements.openaiKey.value = state.currentConfig.openaiKey || "";
-  elements.openaiModel.value = state.currentConfig.openaiModel || "gpt-4o-mini";
   elements.envSelect.value = state.currentConfig.env || "test";
   
   elements.deleteConfigBtn.style.display = state.currentConfigId ? "block" : "none";
@@ -204,8 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
       name,
       apiKey,
       project,
-      openaiKey: elements.openaiKey.value.trim(),
-      openaiModel: elements.openaiModel.value.trim() || "gpt-4o-mini",
       env: elements.envSelect.value,
     };
 
