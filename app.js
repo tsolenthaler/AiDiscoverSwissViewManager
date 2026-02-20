@@ -23,6 +23,12 @@ const SEARCH_REQUEST_FILTER_KEYS = [
   "addressPostalCode",
 ];
 
+const FACET_ORDER_BY_OPTIONS = ["name", "count"];
+
+function normalizeFacetOrderBy(value) {
+  return FACET_ORDER_BY_OPTIONS.includes(value) ? value : "name";
+}
+
 const state = {
   settings: { ...DEFAULT_SETTINGS },
   views: [],
@@ -600,7 +606,10 @@ function renderFacets() {
         </label>
         <label>
           <span>Order by</span>
-          <input data-field="orderBy" value="${facet.orderBy || ""}" />
+          <select data-field="orderBy">
+            <option value="name" ${normalizeFacetOrderBy(facet.orderBy) === "name" ? "selected" : ""}>name</option>
+            <option value="count" ${normalizeFacetOrderBy(facet.orderBy) === "count" ? "selected" : ""}>count</option>
+          </select>
         </label>
         <label>
           <span>Order direction</span>
@@ -669,6 +678,8 @@ function updateFacetField(index, field, value) {
     facet.scope = value || "current";
   } else if (field === "excludeRedundant") {
     facet.excludeRedundant = value;
+  } else if (field === "orderBy") {
+    facet.orderBy = normalizeFacetOrderBy(value);
   } else if (field?.startsWith("responseNames.")) {
     const key = field.split(".")[1];
     facet.responseNames = facet.responseNames || {};
@@ -689,7 +700,7 @@ function buildRequestBody() {
           responseNames: facet.responseNames || undefined,
           filterValues: facet.filterValues?.length ? facet.filterValues : undefined,
           additionalType: facet.additionalType?.length ? facet.additionalType : undefined,
-          orderBy: facet.orderBy || undefined,
+          orderBy: normalizeFacetOrderBy(facet.orderBy),
           orderDirection: facet.orderDirection || undefined,
           count: facet.count || undefined,
           scope: facet.scope || undefined,
@@ -797,7 +808,7 @@ function applyViewToDraft(view) {
     responseNames: facet.responseNames,
     filterValues: facet.filterValues || [],
     additionalType: facet.additionalType || [],
-    orderBy: facet.orderBy,
+    orderBy: normalizeFacetOrderBy(facet.orderBy),
     orderDirection: facet.orderDirection,
     count: facet.count,
     scope: facet.scope || "current",
@@ -942,7 +953,7 @@ function wireEvents() {
       responseNames: { de: "", en: "" },
       filterValues: [],
       additionalType: [],
-      orderBy: "",
+      orderBy: "name",
       orderDirection: "",
       count: undefined,
       scope: "current",
@@ -1016,7 +1027,7 @@ function init() {
           responseNames: facet.responseNames,
           filterValues: facet.filterValues || [],
           additionalType: facet.additionalType || [],
-          orderBy: facet.orderBy,
+          orderBy: normalizeFacetOrderBy(facet.orderBy),
           orderDirection: facet.orderDirection,
           count: facet.count,
           scope: facet.scope || "current",
