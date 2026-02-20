@@ -436,7 +436,23 @@ function renderViews() {
     const isActive = state.selectedViewId != null && viewId != null && String(state.selectedViewId) === String(viewId);
     const item = document.createElement("div");
     item.className = `list-item ${isActive ? "active" : ""}`;
-    item.textContent = `${view.name || viewId || "(no id)"} · ${view.scheduleStrategy || ""}`;
+
+    const name = document.createElement("span");
+    name.className = "list-item-name";
+    name.textContent = view.name || viewId || "(no id)";
+
+    const identifier = document.createElement("span");
+    identifier.className = "list-item-identifier";
+    identifier.textContent = viewId ? ` - ${viewId}` : "";
+
+    const schedule = document.createElement("span");
+    schedule.className = "list-item-schedule";
+    schedule.textContent = view.scheduleStrategy ? ` · ${view.scheduleStrategy}` : "";
+
+    item.appendChild(name);
+    item.appendChild(schedule);
+    item.appendChild(identifier);
+
     item.addEventListener("click", () => {
       if (!viewId) {
         return;

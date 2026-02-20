@@ -382,6 +382,16 @@ button.danger {
   cursor: pointer;
 }
 
+.list-item-name {
+  font-weight: 500;
+}
+
+.list-item-identifier,
+.list-item-schedule {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .list-item.active {
   border-color: var(--primary);
   background: #e0e7ff;
