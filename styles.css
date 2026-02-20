@@ -359,6 +359,10 @@ button.danger {
   color: var(--muted);
 }
 
+#viewSearchInput {
+  width: 100%;
+}
+
 .list {
   min-height: 260px;
   border: 1px dashed var(--border);

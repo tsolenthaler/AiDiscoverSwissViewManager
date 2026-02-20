@@ -50,6 +50,7 @@ function normalizeFacetOrderBy(value) {
 const state = {
   settings: { ...DEFAULT_SETTINGS },
   views: [],
+  viewSearchQuery: "",
   selectedViewId: null,
   draft: {
     name: "",
@@ -68,6 +69,7 @@ const state = {
 
 const elements = {
   refreshViewsBtn: document.getElementById("refreshViewsBtn"),
+  viewSearchInput: document.getElementById("viewSearchInput"),
   viewsList: document.getElementById("viewsList"),
   loadViewBtn: document.getElementById("loadViewBtn"),
   deleteViewBtn: document.getElementById("deleteViewBtn"),
@@ -416,7 +418,20 @@ function renderViews() {
     elements.viewsList.innerHTML = "<div class=\"status\">No views loaded.</div>";
     return;
   }
-  state.views.forEach((view) => {
+  const normalizedQuery = (state.viewSearchQuery || "").trim().toLowerCase();
+  const filteredViews = state.views.filter((view) => {
+    if (!normalizedQuery) {
+      return true;
+    }
+    return String(view?.name || "").toLowerCase().includes(normalizedQuery);
+  });
+
+  if (!filteredViews.length) {
+    elements.viewsList.innerHTML = "<div class=\"status\">No views matching your search.</div>";
+    return;
+  }
+
+  filteredViews.forEach((view) => {
     const viewId = getViewId(view);
     const isActive = state.selectedViewId != null && viewId != null && String(state.selectedViewId) === String(viewId);
     const item = document.createElement("div");
@@ -970,6 +985,13 @@ function wireEvents() {
   elements.refreshViewsBtn.addEventListener("click", loadViews);
   elements.loadViewBtn.addEventListener("click", loadSelectedView);
   elements.deleteViewBtn.addEventListener("click", deleteView);
+
+  if (elements.viewSearchInput) {
+    elements.viewSearchInput.addEventListener("input", () => {
+      state.viewSearchQuery = elements.viewSearchInput.value || "";
+      renderViews();
+    });
+  }
 
   elements.draftName.addEventListener("input", () => {
     state.draft.name = elements.draftName.value;
