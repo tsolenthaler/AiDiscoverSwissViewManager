@@ -26,6 +26,11 @@
             <h3>Gespeicherte Konfigurationen</h3>
             <div id="configList" class="config-list"></div>
             <button id="newConfigBtn" class="secondary">+ Neue Konfiguration</button>
+            <div class="button-row" style="margin-top: 8px;">
+              <button id="exportConfigsBtn" type="button" class="secondary">Export JSON</button>
+              <button id="importConfigsBtn" type="button" class="secondary">Import JSON</button>
+            </div>
+            <input id="importConfigsInput" type="file" accept="application/json,.json" style="display: none;" />
           </div>
 
           <div class="config-form-section">

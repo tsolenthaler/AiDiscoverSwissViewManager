@@ -16,6 +16,9 @@ const state = {
 const elements = {
   configList: document.getElementById("configList"),
   newConfigBtn: document.getElementById("newConfigBtn"),
+  exportConfigsBtn: document.getElementById("exportConfigsBtn"),
+  importConfigsBtn: document.getElementById("importConfigsBtn"),
+  importConfigsInput: document.getElementById("importConfigsInput"),
   configName: document.getElementById("configName"),
   envSelect: document.getElementById("envSelect"),
   settingsForm: document.getElementById("settingsForm"),
@@ -159,6 +162,122 @@ function updateSettingsStatus(message, isError = false) {
   elements.settingsStatus.style.color = isError ? "var(--danger)" : "var(--primary)";
 }
 
+function getExportFileName() {
+  const now = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  return `aiviewmanager-configs-${stamp}.json`;
+}
+
+function exportConfigsAsJson() {
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    currentConfigId: state.currentConfigId,
+    configs: state.configs,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = getExportFileName();
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(url);
+  updateSettingsStatus("Konfigurationen als JSON exportiert.");
+}
+
+function normalizeImportedConfig(config) {
+  if (!config || typeof config !== "object") return null;
+
+  const name = typeof config.name === "string" ? config.name.trim() : "";
+  const apiKey = typeof config.apiKey === "string" ? config.apiKey.trim() : "";
+  const project = typeof config.project === "string" ? config.project.trim() : "";
+  const env = config.env === "prod" ? "prod" : "test";
+
+  if (!name) return null;
+
+  return { name, apiKey, project, env };
+}
+
+function importConfigsFromJsonFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      const raw = String(reader.result || "");
+      const parsed = JSON.parse(raw);
+      const importedConfigs = parsed?.configs;
+
+      if (!importedConfigs || typeof importedConfigs !== "object" || Array.isArray(importedConfigs)) {
+        throw new Error("invalid-format");
+      }
+
+      const normalizedConfigs = {};
+      Object.entries(importedConfigs).forEach(([configId, config]) => {
+        if (!configId || typeof configId !== "string") return;
+        const normalized = normalizeImportedConfig(config);
+        if (normalized) {
+          normalizedConfigs[configId] = normalized;
+        }
+      });
+
+      const importedCount = Object.keys(normalizedConfigs).length;
+      if (importedCount === 0) {
+        throw new Error("no-valid-configs");
+      }
+
+      if (Object.keys(state.configs).length > 0) {
+        const shouldOverwrite = confirm("Vorhandene Konfigurationen durch Import ersetzen?");
+        if (!shouldOverwrite) {
+          updateSettingsStatus("Import abgebrochen.");
+          return;
+        }
+      }
+
+      state.configs = normalizedConfigs;
+
+      const preferredCurrentId = typeof parsed.currentConfigId === "string" ? parsed.currentConfigId : null;
+      const availableIds = Object.keys(state.configs);
+      state.currentConfigId = preferredCurrentId && state.configs[preferredCurrentId]
+        ? preferredCurrentId
+        : availableIds[0] || null;
+      state.currentConfig = state.currentConfigId
+        ? { ...state.configs[state.currentConfigId] }
+        : { ...DEFAULT_CONFIG };
+
+      saveAllConfigs();
+      if (state.currentConfigId) {
+        saveCurrentConfig();
+      } else {
+        localStorage.removeItem(CURRENT_CONFIG_KEY);
+      }
+
+      renderConfigList();
+      renderForm();
+      updateSettingsStatus(`${importedCount} Konfiguration(en) importiert.`);
+    } catch (error) {
+      console.error("Import failed:", error);
+      updateSettingsStatus("Import fehlgeschlagen: Ungültige JSON-Datei.", true);
+    } finally {
+      elements.importConfigsInput.value = "";
+    }
+  };
+
+  reader.onerror = () => {
+    updateSettingsStatus("Import fehlgeschlagen: Datei konnte nicht gelesen werden.", true);
+    elements.importConfigsInput.value = "";
+  };
+
+  reader.readAsText(file, "utf-8");
+}
+
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   loadAllConfigs();
@@ -167,6 +286,12 @@ document.addEventListener("DOMContentLoaded", () => {
   renderForm();
 
   elements.newConfigBtn.addEventListener("click", newConfig);
+  elements.exportConfigsBtn.addEventListener("click", exportConfigsAsJson);
+  elements.importConfigsBtn.addEventListener("click", () => elements.importConfigsInput.click());
+  elements.importConfigsInput.addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0];
+    importConfigsFromJsonFile(file);
+  });
 
   elements.settingsForm.addEventListener("submit", (event) => {
     event.preventDefault();
