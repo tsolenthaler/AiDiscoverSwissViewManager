@@ -491,7 +491,39 @@ function handleHistoryAction(action, index) {
       alert("Version restored to draft. Click 'Update view' to save.");
     }
   } else if (action === "compare") {
-    showComparisonModal(version.data, state.responses.response);
+    if (history.length < 2) {
+      alert("At least two history versions are required for comparison.");
+      return;
+    }
+
+    const selectedVersionNumber = history.length - index;
+    const selectedTimestamp = new Date(version.timestamp).toLocaleString("de-DE");
+
+    let olderVersion;
+    let newerVersion;
+    let olderVersionNumber;
+    let newerVersionNumber;
+
+    if (index < history.length - 1) {
+      olderVersion = history[index + 1];
+      newerVersion = version;
+      olderVersionNumber = history.length - (index + 1);
+      newerVersionNumber = selectedVersionNumber;
+    } else {
+      olderVersion = version;
+      newerVersion = history[index - 1];
+      olderVersionNumber = selectedVersionNumber;
+      newerVersionNumber = history.length - (index - 1);
+    }
+
+    const olderTimestamp = new Date(olderVersion.timestamp).toLocaleString("de-DE");
+    const newerTimestamp = new Date(newerVersion.timestamp).toLocaleString("de-DE");
+
+    showComparisonModal(olderVersion.data, newerVersion.data, {
+      olderLabel: `Version ${olderVersionNumber} · ${olderTimestamp}`,
+      newerLabel: `Version ${newerVersionNumber} · ${newerTimestamp}`,
+      selectedLabel: `Selected: Version ${selectedVersionNumber} · ${selectedTimestamp}`,
+    });
   } else if (action === "view") {
     showJsonModal(version.data);
   }
@@ -564,7 +596,119 @@ function showErrorModal(error) {
   });
 }
 
-function showComparisonModal(oldVersion, currentVersion) {
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function computeLineDiff(oldLines, newLines) {
+  const oldLength = oldLines.length;
+  const newLength = newLines.length;
+  const lcs = Array.from({ length: oldLength + 1 }, () =>
+    Array(newLength + 1).fill(0)
+  );
+
+  for (let oldIndex = oldLength - 1; oldIndex >= 0; oldIndex -= 1) {
+    for (let newIndex = newLength - 1; newIndex >= 0; newIndex -= 1) {
+      if (oldLines[oldIndex] === newLines[newIndex]) {
+        lcs[oldIndex][newIndex] = lcs[oldIndex + 1][newIndex + 1] + 1;
+      } else {
+        lcs[oldIndex][newIndex] = Math.max(
+          lcs[oldIndex + 1][newIndex],
+          lcs[oldIndex][newIndex + 1]
+        );
+      }
+    }
+  }
+
+  const diffRows = [];
+  let oldIndex = 0;
+  let newIndex = 0;
+  let oldLineNumber = 1;
+  let newLineNumber = 1;
+
+  while (oldIndex < oldLength && newIndex < newLength) {
+    if (oldLines[oldIndex] === newLines[newIndex]) {
+      diffRows.push({
+        type: "same",
+        line: oldLines[oldIndex],
+        oldLineNumber,
+        newLineNumber,
+      });
+      oldIndex += 1;
+      newIndex += 1;
+      oldLineNumber += 1;
+      newLineNumber += 1;
+    } else if (lcs[oldIndex + 1][newIndex] >= lcs[oldIndex][newIndex + 1]) {
+      diffRows.push({
+        type: "removed",
+        line: oldLines[oldIndex],
+        oldLineNumber,
+      });
+      oldIndex += 1;
+      oldLineNumber += 1;
+    } else {
+      diffRows.push({
+        type: "added",
+        line: newLines[newIndex],
+        newLineNumber,
+      });
+      newIndex += 1;
+      newLineNumber += 1;
+    }
+  }
+
+  while (oldIndex < oldLength) {
+    diffRows.push({
+      type: "removed",
+      line: oldLines[oldIndex],
+      oldLineNumber,
+    });
+    oldIndex += 1;
+    oldLineNumber += 1;
+  }
+
+  while (newIndex < newLength) {
+    diffRows.push({
+      type: "added",
+      line: newLines[newIndex],
+      newLineNumber,
+    });
+    newIndex += 1;
+    newLineNumber += 1;
+  }
+
+  return diffRows;
+}
+
+function buildDiffHtml(oldVersion, newVersion) {
+  const oldLines = JSON.stringify(oldVersion || {}, null, 2).split("\n");
+  const newLines = JSON.stringify(newVersion || {}, null, 2).split("\n");
+  const diffRows = computeLineDiff(oldLines, newLines);
+
+  return diffRows
+    .map((row) => {
+      const sign = row.type === "added" ? "+" : row.type === "removed" ? "-" : " ";
+      const oldLine = row.oldLineNumber != null ? row.oldLineNumber : "";
+      const newLine = row.newLineNumber != null ? row.newLineNumber : "";
+      return `
+        <div class="diff-row diff-${row.type}">
+          <span class="diff-line-number">${oldLine}</span>
+          <span class="diff-line-number">${newLine}</span>
+          <span class="diff-sign">${sign}</span>
+          <span class="diff-line-content">${escapeHtml(row.line)}</span>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function showComparisonModal(oldVersion, currentVersion, labels = {}) {
+  const diffHtml = buildDiffHtml(oldVersion, currentVersion);
   const modal = document.createElement("div");
   modal.className = "modal-overlay";
   modal.innerHTML = `
@@ -573,15 +717,23 @@ function showComparisonModal(oldVersion, currentVersion) {
         <h3>Version Comparison</h3>
         <button class="ghost small" id="closeCompareModal">Close</button>
       </div>
-      <div class="comparison-container">
-        <div class="comparison-column">
-          <h4>Selected Version</h4>
-          <pre class="code-block">${JSON.stringify(oldVersion, null, 2)}</pre>
+      <div class="comparison-meta">
+        <span><strong>Old:</strong> ${labels.olderLabel || "Older version"}</span>
+        <span><strong>New:</strong> ${labels.newerLabel || "Newer version"}</span>
+        ${labels.selectedLabel ? `<span>${labels.selectedLabel}</span>` : ""}
+      </div>
+      <div class="diff-legend">
+        <span class="diff-pill removed">Removed</span>
+        <span class="diff-pill added">Added</span>
+      </div>
+      <div class="diff-container">
+        <div class="diff-header">
+          <span>Old #</span>
+          <span>New #</span>
+          <span></span>
+          <span>Line</span>
         </div>
-        <div class="comparison-column">
-          <h4>Current Version</h4>
-          <pre class="code-block">${JSON.stringify(currentVersion, null, 2)}</pre>
-        </div>
+        ${diffHtml}
       </div>
     </div>
   `;
