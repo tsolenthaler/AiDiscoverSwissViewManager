@@ -153,7 +153,7 @@ function renderLivePreview() {
   headerRow.style.borderBottom = "2px solid var(--border)";
   headerRow.style.backgroundColor = "#f3f4f6";
   
-  ["name", "identifier", "additionalType"].forEach(header => {
+  ["image", "name", "identifier", "additionalType"].forEach(header => {
     const th = document.createElement("th");
     th.textContent = header;
     th.style.padding = "12px";
@@ -174,11 +174,29 @@ function renderLivePreview() {
       row.style.backgroundColor = "#f9fafb";
     }
     
-    ["name", "identifier", "additionalType"].forEach(key => {
+    ["image", "name", "identifier", "additionalType"].forEach(key => {
       const cell = document.createElement("td");
       const value = item[key];
-      
-      if (value === null || value === undefined) {
+
+      if (key === "image") {
+        const thumbnailUrl =
+          value && typeof value === "object" && typeof value.thumbnailUrl === "string"
+            ? value.thumbnailUrl.trim()
+            : "";
+
+        if (thumbnailUrl) {
+          const img = document.createElement("img");
+          img.src = thumbnailUrl;
+          img.alt = item.name ? `Preview for ${item.name}` : "Preview image";
+          img.style.width = "48px";
+          img.style.height = "48px";
+          img.style.objectFit = "cover";
+          img.style.borderRadius = "4px";
+          cell.appendChild(img);
+        } else {
+          cell.textContent = "-";
+        }
+      } else if (value === null || value === undefined) {
         cell.textContent = "-";
       } else if (typeof value === "object") {
         cell.textContent = JSON.stringify(value);
