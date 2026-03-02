@@ -1215,8 +1215,7 @@ function canInsertCopiedFilter() {
 function canInsertCopiedFacet() {
   return !!(
     state.copiedFacet &&
-    state.selectedViewId &&
-    String(state.copiedFacet.sourceViewId) !== String(state.selectedViewId)
+    state.selectedViewId
   );
 }
 
@@ -1252,7 +1251,7 @@ function copyFacetForOtherView(facet) {
     item: cloneFacet(facet),
   };
   updateCopiedInsertButtonsVisibility();
-  alert("Facet copied. Load another view and click 'Add copy facet'.");
+  alert("Facet copied. Click 'Add copy facet' to insert it.");
 }
 
 function addCopiedFilterToDraft() {
