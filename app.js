@@ -44,7 +44,7 @@ const FACET_NAME_OPTIONS = [
   "address/postalCode",
 ];
 
-const FACET_ORDER_BY_OPTIONS = ["name", "count"];
+const FACET_ORDER_BY_OPTIONS = ["name", "count", "value"];
 
 function normalizeFacetName(value) {
   if (typeof value !== "string") {
@@ -1518,6 +1518,7 @@ function renderFacets() {
           <select data-field="orderBy">
             <option value="name" ${normalizeFacetOrderBy(facet.orderBy) === "name" ? "selected" : ""}>name</option>
             <option value="count" ${normalizeFacetOrderBy(facet.orderBy) === "count" ? "selected" : ""}>count</option>
+            <option value="value" ${normalizeFacetOrderBy(facet.orderBy) === "value" ? "selected" : ""}>value</option>
           </select>
         </label>
         <label>
