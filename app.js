@@ -15,6 +15,8 @@ const SEARCH_REQUEST_FILTER_KEYS = [
   "categoryTree",
   "filters",
   "award",
+  "datasource",
+  "sourcePartner",
   "campaignTag",
   "allTag",
   "category",
@@ -1535,6 +1537,8 @@ function renderFilters() {
             <option value="categoryTree" ${filter.type === "categoryTree" ? "selected" : ""}>categoryTree</option>
             <option value="filters" ${filter.type === "filters" ? "selected" : ""}>filters</option>
             <option value="award" ${filter.type === "award" ? "selected" : ""}>award</option>
+            <option value="datasource" ${filter.type === "datasource" ? "selected" : ""}>datasource</option>
+            <option value="sourcePartner" ${filter.type === "sourcePartner" ? "selected" : ""}>sourcePartner</option>
             <option value="campaignTag" ${filter.type === "campaignTag" ? "selected" : ""}>campaignTag</option>
             <option value="allTag" ${filter.type === "allTag" ? "selected" : ""}>allTag</option>
             <option value="category" ${filter.type === "category" ? "selected" : ""}>category</option>
