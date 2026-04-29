@@ -85,6 +85,20 @@ function normalizeSearchOrderBy(value) {
   return String(value).trim();
 }
 
+function normalizeResultsPerPage(value) {
+  if (value == null || value === "") {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return undefined;
+  }
+
+  const normalized = Math.floor(parsed);
+  return normalized > 0 ? normalized : undefined;
+}
+
 function normalizeFacetValueList(values) {
   if (typeof values === "string") {
     const trimmed = values.trim();
@@ -305,6 +319,7 @@ const state = {
     name: "",
     description: "",
     orderBy: "",
+    resultsPerPage: undefined,
     scheduleStrategy: "Daily",
     filters: [],
     facets: [],
@@ -327,6 +342,7 @@ const elements = {
   draftName: document.getElementById("draftName"),
   draftDescription: document.getElementById("draftDescription"),
   draftOrderBy: document.getElementById("draftOrderBy"),
+  draftResultsPerPage: document.getElementById("draftResultsPerPage"),
   addFilterBtn: document.getElementById("addFilterBtn"),
   addCopiedFilterBtn: document.getElementById("addCopiedFilterBtn"),
   filterList: document.getElementById("filterList"),
@@ -1500,6 +1516,9 @@ function renderDraft() {
   if (elements.draftOrderBy) {
     elements.draftOrderBy.value = state.draft.orderBy || "";
   }
+  if (elements.draftResultsPerPage) {
+    elements.draftResultsPerPage.value = state.draft.resultsPerPage ?? "";
+  }
   updateCopiedInsertButtonsVisibility();
   renderFilters();
   renderFacets();
@@ -1835,6 +1854,11 @@ function buildRequestBody() {
     searchRequest.orderBy = normalizedOrderBy;
   }
 
+  const normalizedResultsPerPage = normalizeResultsPerPage(state.draft.resultsPerPage);
+  if (normalizedResultsPerPage) {
+    searchRequest.resultsPerPage = normalizedResultsPerPage;
+  }
+
   state.draft.filters.forEach((filter) => {
     if (!filter.type || !SEARCH_REQUEST_FILTER_KEYS.includes(filter.type)) {
       return;
@@ -2050,6 +2074,7 @@ function applyViewToDraft(view) {
   state.draft.name = view.name || "";
   state.draft.description = view.description || "";
   state.draft.orderBy = normalizeSearchOrderBy(view.searchRequest?.orderBy);
+  state.draft.resultsPerPage = normalizeResultsPerPage(view.searchRequest?.resultsPerPage);
   state.draft.scheduleStrategy = view.scheduleStrategy || "Daily";
   
   // Reset filters
@@ -2269,6 +2294,13 @@ function wireEvents() {
     });
   }
 
+  if (elements.draftResultsPerPage) {
+    elements.draftResultsPerPage.addEventListener("input", () => {
+      state.draft.resultsPerPage = normalizeResultsPerPage(elements.draftResultsPerPage.value);
+      updateRequestJson();
+    });
+  }
+
   elements.addFilterBtn.addEventListener("click", () => {
     state.draft.filters.push({
       type: "combinedTypeTree",
@@ -2366,6 +2398,7 @@ function init() {
       state.draft.name = json.name || state.draft.name;
       state.draft.description = json.description || state.draft.description;
       state.draft.orderBy = normalizeSearchOrderBy(json.searchRequest?.orderBy);
+      state.draft.resultsPerPage = normalizeResultsPerPage(json.searchRequest?.resultsPerPage);
       state.draft.scheduleStrategy = json.scheduleStrategy || state.draft.scheduleStrategy;
       
       const searchRequest = json.searchRequest || {};
