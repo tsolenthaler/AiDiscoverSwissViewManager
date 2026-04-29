@@ -38,6 +38,7 @@ const FACET_NAME_OPTIONS = [
   "priceRange",
   "award",
   "tag",
+  "campaignTag",
   "leafType",
   "amenityFeature",
   "starRating/name",
